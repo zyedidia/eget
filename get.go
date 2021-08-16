@@ -1,14 +1,14 @@
 package main
 
 import (
-	"bytes"
-	"compress/gzip"
 	"flag"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"path"
+	"path/filepath"
 )
 
 var tagf = flag.String("tag", "", "tagged release to use")
@@ -62,22 +62,20 @@ func main() {
 		log.Fatal(err)
 	}
 
-	br := bytes.NewReader(body)
-	gzf, err := gzip.NewReader(br)
+	extractor := NewExtractor(path.Base(url), &BinaryChooser{})
 	if err != nil {
 		log.Fatal(err)
 	}
-	extractor := &TarExtractor{
-		File: &BinaryChooser{},
-	}
-	bin, err := extractor.Extract(gzf)
+	bin, err := extractor.Extract(body)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	out := bin.Name
+	var out string
 	if output != nil && *output != "" {
 		out = *output
+	} else {
+		out = filepath.Base(bin.Name)
 	}
 
 	f, err := os.OpenFile(out, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, bin.Mode)
