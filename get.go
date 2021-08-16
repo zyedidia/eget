@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -42,7 +43,27 @@ func main() {
 		log.Fatal(err)
 	}
 	url, err := detector.Detect(assets)
-	if err != nil {
+
+	var me *MultipleCandidatesError
+	if errors.As(err, &me) {
+		fmt.Println("Multiple candidates found:")
+		for i, c := range me.Candidates {
+			fmt.Printf("(%d) %s\n", i+1, path.Base(c))
+		}
+		var choice int
+		for {
+			fmt.Print("Please select one (enter its number): ")
+			_, err := fmt.Scanf("%d", &choice)
+			if err == nil && (choice <= 0 || choice > len(me.Candidates)) {
+				err = fmt.Errorf("%d is out of bounds", choice)
+			}
+			if err == nil {
+				break
+			}
+			fmt.Printf("Invalid selection: %v\n", err)
+		}
+		url = me.Candidates[choice-1]
+	} else if err != nil {
 		log.Fatal(err)
 	}
 
