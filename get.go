@@ -1,15 +1,16 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
-	"io"
 	"log"
-	"net/http"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+
+	pb "github.com/schollz/progressbar/v3"
 )
 
 var tagf = flag.String("tag", "", "tagged release to use")
@@ -27,7 +28,7 @@ func main() {
 	repo := flag.Args()[0]
 	tag := "latest"
 	if tagf != nil && *tagf != "" {
-		tag = *tagf
+		tag = fmt.Sprintf("tags/%s", *tagf)
 	}
 
 	gh := &GithubAssetFinder{
@@ -66,9 +67,10 @@ func main() {
 	}
 
 	fmt.Printf("%s\n", url)
-	fmt.Print("Download and continue? [Y/n]")
 
 	if !*yes {
+		fmt.Print("Download and continue? [Y/n] ")
+
 		var input string
 		fmt.Scanln(&input)
 		input = strings.ToLower(strings.TrimSpace(input))
@@ -78,19 +80,15 @@ func main() {
 		}
 	}
 
-	resp, err := http.Get(url)
+	buf := &bytes.Buffer{}
+	err = Download(url, buf, func(size int64) *pb.ProgressBar {
+		return pb.DefaultBytes(size, "Downloading")
+	})
 	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		log.Fatalf("server returned bad status: %s", resp.Status)
+		log.Fatalf("%s (URL: %s)\n", err, url)
 	}
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
+	body := buf.Bytes()
 
 	extractor := NewExtractor(path.Base(url), &BinaryChooser{})
 	if err != nil {

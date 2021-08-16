@@ -33,7 +33,7 @@ func (f *GithubAssetFinder) Find() ([]string, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("server returned bad status: %s", resp.Status)
+		return nil, fmt.Errorf("%s (URL: %s)", resp.Status, url)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
