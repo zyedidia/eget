@@ -8,7 +8,7 @@ import (
 
 // A Detector selects an asset from a list of possibilities.
 type Detector interface {
-	Detect(assets []string) (string, error)
+	Detect(assets []string) (string, []string, error)
 }
 
 type OS struct {
@@ -86,27 +86,19 @@ func NewHostDetector() (*SystemDetector, error) {
 	}, nil
 }
 
-type MultipleCandidatesError struct {
-	Candidates []string
-}
-
-func (me *MultipleCandidatesError) Error() string {
-	return fmt.Sprintf("found %d candidates", len(me.Candidates))
-}
-
-func (d *SystemDetector) Detect(assets []string) (string, error) {
+func (d *SystemDetector) Detect(assets []string) (string, []string, error) {
 	var matches []string
+	all := make([]string, 0, len(assets))
 	for _, a := range assets {
 		if d.Os.Match(a) && d.Arch.Match(a) {
 			matches = append(matches, a)
 		}
+		all = append(all, a)
 	}
 	if len(matches) == 1 {
-		return matches[0], nil
+		return matches[0], nil, nil
 	} else if len(matches) > 1 {
-		return "", &MultipleCandidatesError{
-			Candidates: matches,
-		}
+		return "", matches, fmt.Errorf("%d candidates found", len(matches))
 	}
-	return "", fmt.Errorf("no candidates found")
+	return "", all, fmt.Errorf("no candidates found")
 }

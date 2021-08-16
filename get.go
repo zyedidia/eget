@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -10,10 +9,12 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 )
 
 var tagf = flag.String("tag", "", "tagged release to use")
 var output = flag.String("o", "", "output file")
+var yes = flag.Bool("y", false, "automatically approve all yes/no prompts")
 
 func main() {
 	flag.Parse()
@@ -42,19 +43,18 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	url, err := detector.Detect(assets)
+	url, candidates, err := detector.Detect(assets)
 
-	var me *MultipleCandidatesError
-	if errors.As(err, &me) {
-		fmt.Println("Multiple candidates found:")
-		for i, c := range me.Candidates {
+	if err != nil {
+		fmt.Printf("%v: please select manually\n", err)
+		for i, c := range candidates {
 			fmt.Printf("(%d) %s\n", i+1, path.Base(c))
 		}
 		var choice int
 		for {
 			fmt.Print("Please select one (enter its number): ")
 			_, err := fmt.Scanf("%d", &choice)
-			if err == nil && (choice <= 0 || choice > len(me.Candidates)) {
+			if err == nil && (choice <= 0 || choice > len(candidates)) {
 				err = fmt.Errorf("%d is out of bounds", choice)
 			}
 			if err == nil {
@@ -62,12 +62,21 @@ func main() {
 			}
 			fmt.Printf("Invalid selection: %v\n", err)
 		}
-		url = me.Candidates[choice-1]
-	} else if err != nil {
-		log.Fatal(err)
+		url = candidates[choice-1]
 	}
 
-	fmt.Printf("Downloading %s\n", url)
+	fmt.Printf("%s\n", url)
+	fmt.Print("Download and continue? [Y/n]")
+
+	if !*yes {
+		var input string
+		fmt.Scanln(&input)
+		input = strings.ToLower(strings.TrimSpace(input))
+		if input != "" && !strings.HasPrefix(input, "y") && !strings.HasPrefix(input, "yes") {
+			fmt.Println("Operation canceled")
+			os.Exit(0)
+		}
+	}
 
 	resp, err := http.Get(url)
 	if err != nil {
@@ -106,5 +115,5 @@ func main() {
 	f.Write(bin.Data)
 	f.Close()
 
-	fmt.Printf("Extracted binary to %s\n", out)
+	fmt.Printf("Extracted `%s` to `%s`\n", bin.Name, out)
 }
