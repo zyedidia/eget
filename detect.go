@@ -122,6 +122,9 @@ func (a *AllDetector) Detect(assets []string) (string, []string, error) {
 	for _, asset := range assets {
 		all = append(all, asset)
 	}
+	if len(all) == 1 {
+		return all[0], nil, nil
+	}
 	return "", all, fmt.Errorf("%d matches found", len(all))
 }
 

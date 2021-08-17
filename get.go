@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path"
@@ -38,22 +39,31 @@ func main() {
 		os.Exit(0)
 	}
 
-	repo := args[0]
-	if !strings.Contains(repo, "/") {
-		log.Fatal("invalid repo (no '/' found)")
-	}
-	repoparts := strings.Split(repo, "/")
+	var finder Finder
+	var tool string
+	if opts.URL {
+		finder = &DirectAssetFinder{
+			URL: args[0],
+		}
+		opts.System = "all"
+	} else {
+		repo := args[0]
+		if !strings.Contains(repo, "/") {
+			log.Fatal("invalid repo (no '/' found)")
+		}
+		tool = strings.Split(repo, "/")[1]
 
-	tag := "latest"
-	if opts.Tag != "" {
-		tag = fmt.Sprintf("tags/%s", opts.Tag)
-	}
+		tag := "latest"
+		if opts.Tag != "" {
+			tag = fmt.Sprintf("tags/%s", opts.Tag)
+		}
 
-	gh := &GithubAssetFinder{
-		Repo: repo,
-		Tag:  tag,
+		finder = &GithubAssetFinder{
+			Repo: repo,
+			Tag:  tag,
+		}
 	}
-	assets, err := gh.Find()
+	assets, err := finder.Find()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -121,13 +131,20 @@ func main() {
 	body := buf.Bytes()
 
 	var extractor Extractor
-	if opts.ExtractFile != "" {
+	if opts.DLOnly {
+		extractor = &SingleFileExtractor{
+			Name: path.Base(url),
+			Decompress: func(r io.Reader) (io.Reader, error) {
+				return r, nil
+			},
+		}
+	} else if opts.ExtractFile != "" {
 		extractor = NewExtractor(path.Base(url), &LiteralFileChooser{
 			File: opts.ExtractFile,
 		})
 	} else {
 		extractor = NewExtractor(path.Base(url), &BinaryChooser{
-			Tool: repoparts[1],
+			Tool: tool,
 		})
 	}
 	bin, err := extractor.Extract(body)

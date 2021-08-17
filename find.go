@@ -54,3 +54,11 @@ func (f *GithubAssetFinder) Find() ([]string, error) {
 
 	return assets, nil
 }
+
+type DirectAssetFinder struct {
+	URL string
+}
+
+func (f *DirectAssetFinder) Find() ([]string, error) {
+	return []string{f.URL}, nil
+}
