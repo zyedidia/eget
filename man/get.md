@@ -56,6 +56,14 @@ header: Get Manual
 
 :    Download using a direct URL rather than auto-detecting a release from GitHub. Example **get --url https://github.com/zyedidia/micro/releases/download/v2.0.10/micro-2.0.10-linux64.tar.gz**.
 
+  `--asset`
+
+:    Download a specific asset. Example: **get --asset nvim.appimage neovim/neovim**.
+
+  `-x`
+
+:    Force the extracted file to be executable. Example: **get -x --asset nvim.appimage neovim/neovim**.
+
   `--sha256`
 
 :    Show the SHA-256 hash of the downloaded asset. This can be used to verify that the asset is not corrupted.

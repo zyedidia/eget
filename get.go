@@ -89,7 +89,11 @@ func main() {
 	// --system pair provided by the user, or the runtime.GOOS/runtime.GOARCH
 	// pair by default (the host system OS/Arch pair).
 	var detector Detector
-	if opts.System == "all" {
+	if opts.Asset != "" {
+		detector = &SingleAssetDetector{
+			Asset: opts.Asset,
+		}
+	} else if opts.System == "all" {
 		detector = &AllDetector{}
 	} else if opts.System != "" {
 		split := strings.Split(opts.System, "/")
@@ -106,7 +110,7 @@ func main() {
 
 	// get the url and candidates from the detector
 	url, candidates, err := detector.Detect(assets)
-	if err != nil {
+	if len(candidates) != 0 && err != nil {
 		// if multiple candidates are returned, the user must select manually which one to download
 		fmt.Printf("%v: please select manually\n", err)
 		for i, c := range candidates {
@@ -125,6 +129,8 @@ func main() {
 			fmt.Printf("Invalid selection: %v\n", err)
 		}
 		url = candidates[choice-1]
+	} else if err != nil {
+		fatal(err)
 	}
 
 	// print the URL and ask for confirmation to continue before downloading
@@ -204,7 +210,7 @@ func main() {
 
 	// extract the binary information
 	bin, bins, err := extractor.Extract(body)
-	if err != nil {
+	if len(bins) != 0 && err != nil {
 		// if there are multiple candidates, have the user select manually
 		fmt.Printf("%v: please select manually\n", err)
 		for i, c := range bins {
@@ -223,6 +229,8 @@ func main() {
 			fmt.Printf("Invalid selection: %v\n", err)
 		}
 		bin = bins[choice-1]
+	} else if err != nil {
+		fatal(err)
 	}
 
 	// write the extracted file to a file on disk, in the --to directory if
@@ -230,6 +238,10 @@ func main() {
 	out := filepath.Base(bin.Name)
 	if opts.Output != "" {
 		out = filepath.Join(opts.Output, out)
+	}
+
+	if opts.Exec {
+		bin.Mode |= 0111
 	}
 
 	// write the file using the same perms it had in the archive

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"path"
 	"regexp"
 )
 
@@ -140,6 +141,20 @@ func (a *AllDetector) Detect(assets []string) (string, []string, error) {
 		return all[0], nil, nil
 	}
 	return "", all, fmt.Errorf("%d matches found", len(all))
+}
+
+// SingleAssetDetector finds a single named asset.
+type SingleAssetDetector struct {
+	Asset string
+}
+
+func (s *SingleAssetDetector) Detect(assets []string) (string, []string, error) {
+	for _, a := range assets {
+		if path.Base(a) == s.Asset {
+			return a, nil, nil
+		}
+	}
+	return "", nil, fmt.Errorf("asset %s not found", s.Asset)
 }
 
 // A SystemDetector matches a particular OS/Arch system pair.
