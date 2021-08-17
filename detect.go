@@ -7,14 +7,20 @@ import (
 
 // A Detector selects an asset from a list of possibilities.
 type Detector interface {
+	// Detect takes a list of possible assets and returns a direct match. If a
+	// single direct match is not found, it returns a list of candidates and an
+	// error explaining what happened.
 	Detect(assets []string) (string, []string, error)
 }
 
+// An OS represents a target operating system.
 type OS struct {
 	name  string
 	regex *regexp.Regexp
 }
 
+// Match returns true if the given archive name is likely to store a binary for
+// this OS.
 func (os *OS) Match(s string) bool {
 	return os.regex.MatchString(s)
 }
@@ -62,6 +68,7 @@ var (
 	}
 )
 
+// a map of GOOS values to internal OS matchers
 var goosmap = map[string]OS{
 	"darwin":  OSDarwin,
 	"windows": OSWindows,
@@ -75,11 +82,14 @@ var goosmap = map[string]OS{
 	"plan9":   OSPlan9,
 }
 
+// An Arch represents a system architecture, such as amd64, i386, arm or others.
 type Arch struct {
 	name  string
 	regex *regexp.Regexp
 }
 
+// Match returns true if this architecture is likely supported by the given
+// archive name.
 func (a *Arch) Match(s string) bool {
 	return a.regex.MatchString(s)
 }
@@ -107,6 +117,7 @@ var (
 	}
 )
 
+// a map from GOARCH values to internal architecture matchers
 var goarchmap = map[string]Arch{
 	"amd64":   ArchAMD64,
 	"386":     ArchI386,
@@ -115,6 +126,9 @@ var goarchmap = map[string]Arch{
 	"riscv64": ArchRiscv64,
 }
 
+// AllDetector matches every asset. If there is only one asset, it is returned
+// as a direct match. If there are multiple assets they are all returned as
+// candidates.
 type AllDetector struct{}
 
 func (a *AllDetector) Detect(assets []string) (string, []string, error) {
@@ -128,11 +142,14 @@ func (a *AllDetector) Detect(assets []string) (string, []string, error) {
 	return "", all, fmt.Errorf("%d matches found", len(all))
 }
 
+// A SystemDetector matches a particular OS/Arch system pair.
 type SystemDetector struct {
 	Os   OS
 	Arch Arch
 }
 
+// NewSystemDetector returns a new detector for the given OS/Arch as given by
+// Go OS/Arch names.
 func NewSystemDetector(sos, sarch string) (*SystemDetector, error) {
 	os, ok := goosmap[sos]
 	if !ok {
@@ -148,6 +165,12 @@ func NewSystemDetector(sos, sarch string) (*SystemDetector, error) {
 	}, nil
 }
 
+// Detect extracts the assets that match this detector's OS/Arch pair. If one
+// direct OS/Arch match is found, it is returned.  If multiple OS/Arch matches
+// are found they are returned as candidates. If multiple assets that only
+// match the OS are found, and no full OS/Arch matches are found, the OS
+// matches are returned as candidates. Otherwise all assets are returned as
+// candidates.
 func (d *SystemDetector) Detect(assets []string) (string, []string, error) {
 	var matches []string
 	var candidates []string

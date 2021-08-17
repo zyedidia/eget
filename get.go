@@ -39,6 +39,10 @@ func main() {
 		os.Exit(0)
 	}
 
+	// Determine the appropriate Finder to use. If opts.URL is provided, we use
+	// a DirectAssetFinder. Otherwise we use a GithubAssetFinder. When a Github
+	// repo is provided, we assume the repo name is the 'tool' name (for direct
+	// URLs, the tool name is unknown and remains empty).
 	var finder Finder
 	var tool string
 	if opts.URL {
@@ -68,6 +72,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Determine the appropriate detector. If the --system is 'all', we use an
+	// AllDetector, which will just return all assets. Otherwise we use the
+	// --system pair provided by the user, or the runtime.GOOS/runtime.GOARCH
+	// pair by default (the host system OS/Arch pair).
 	var detector Detector
 	if opts.System == "all" {
 		detector = &AllDetector{}
@@ -84,9 +92,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// get the url and candidates from the detector
 	url, candidates, err := detector.Detect(assets)
-
 	if err != nil {
+		// if multiple candidates are returned, the user must select manually which one to download
 		fmt.Printf("%v: please select manually\n", err)
 		for i, c := range candidates {
 			fmt.Printf("(%d) %s\n", i+1, path.Base(c))
@@ -106,8 +115,8 @@ func main() {
 		url = candidates[choice-1]
 	}
 
+	// print the URL and ask for confirmation to continue before downloading
 	fmt.Printf("%s\n", url)
-
 	if !opts.Yes {
 		fmt.Print("Download and continue? [Y/n] ")
 
@@ -120,6 +129,7 @@ func main() {
 		}
 	}
 
+	// download with progress bar
 	buf := &bytes.Buffer{}
 	err = Download(url, buf, func(size int64) *pb.ProgressBar {
 		return pb.DefaultBytes(size, "Downloading")
@@ -130,6 +140,11 @@ func main() {
 
 	body := buf.Bytes()
 
+	// Determine which extractor to use. If --download-only is provided, we
+	// just "extract" the downloaded archive to itself. Otherwise we try to
+	// extract the literal file provided by --file, or by default we just
+	// extract a binary with the tool name that was possibly auto-detected
+	// above.
 	var extractor Extractor
 	if opts.DLOnly {
 		extractor = &SingleFileExtractor{
@@ -147,18 +162,38 @@ func main() {
 			Tool: tool,
 		})
 	}
-	bin, err := extractor.Extract(body)
+
+	// extract the binary information
+	bin, bins, err := extractor.Extract(body)
 	if err != nil {
-		log.Fatal(err)
+		// if there are multiple candidates, have the user select manually
+		fmt.Printf("%v: please select manually\n", err)
+		for i, c := range bins {
+			fmt.Printf("(%d) %s\n", i+1, c.Name)
+		}
+		var choice int
+		for {
+			fmt.Print("Enter selection number: ")
+			_, err := fmt.Scanf("%d", &choice)
+			if err == nil && (choice <= 0 || choice > len(candidates)) {
+				err = fmt.Errorf("%d is out of bounds", choice)
+			}
+			if err == nil {
+				break
+			}
+			fmt.Printf("Invalid selection: %v\n", err)
+		}
+		bin = bins[choice-1]
 	}
 
-	var out string
+	// write the extracted file to a file on disk, in the --to directory if
+	// requested
+	out := filepath.Base(bin.Name)
 	if opts.Output != "" {
-		out = opts.Output
-	} else {
-		out = filepath.Base(bin.Name)
+		out = filepath.Join(opts.Output, out)
 	}
 
+	// write the file using the same perms it had in the archive
 	f, err := os.OpenFile(out, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, bin.Mode)
 	if err != nil {
 		log.Fatal(err)
