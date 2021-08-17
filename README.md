@@ -31,7 +31,6 @@ Usage:
 Application Options:
   -t, --tag=           tagged release to use instead of latest
       --to=            extract to directory
-  -y                   automatically approve all yes/no prompts
   -s, --system=        target system to download for
   -f, --file=          file name to extract
   -q, --quiet          only print essential output

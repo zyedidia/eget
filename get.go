@@ -47,7 +47,6 @@ func main() {
 
 	var output io.Writer = os.Stdout
 	if opts.Quiet {
-		opts.Yes = true
 		output = io.Discard
 	}
 
@@ -133,19 +132,8 @@ func main() {
 		fatal(err)
 	}
 
-	// print the URL and ask for confirmation to continue before downloading
+	// print the URL
 	fmt.Fprintf(output, "%s\n", url)
-	if !opts.Yes {
-		fmt.Print("Download and continue? [Y/n] ")
-
-		var input string
-		fmt.Scanln(&input)
-		input = strings.ToLower(strings.TrimSpace(input))
-		if input != "" && !strings.HasPrefix(input, "y") && !strings.HasPrefix(input, "yes") {
-			fmt.Println("Operation canceled")
-			os.Exit(0)
-		}
-	}
 
 	// download with progress bar
 	buf := &bytes.Buffer{}

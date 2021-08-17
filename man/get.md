@@ -32,10 +32,6 @@ header: Get Manual
 
 :    Extract the executable to the given directory. Example: **get zyedidia/micro --to /usr/local/bin**.
 
-  `-y`
-
-:    Automatically approve all yes/no prompts.
-
   `-s, --system=`
 
 :    Use the given system as the target instead of the host. Systems follow the notation 'OS/Arch', where OS is a valid OS (darwin, windows, linux, netbsd, openbsd, freebsd, android, illumos, solaris, plan9), and Arch is a valid architecture (amd64, 386, arm, arm64, riscv64). If the special value **all** is used, all possibilities are given and the user must select manually. Example: **get -s darwin/amd64 zyedidia/micro**.
