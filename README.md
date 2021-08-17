@@ -11,7 +11,7 @@ used for installing simple, static prebuilt binaries, where the extracted
 binary is all that is needed for installation. For more complex installation,
 you may use the `--download-only` option, and perform extraction manually.
 
-![Get Demo](https://web.stanford.edu/~zyedidia/get-demo.gif)
+![Get Demo](https://github.com/zyedidia/blobs/blob/master/get-demo.gif)
 
 For software maintainers, if you provide prebuilt binaries on GitHub, you can list `get`
 as a one-line method for users to install your software.
