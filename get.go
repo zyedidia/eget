@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	pb "github.com/schollz/progressbar/v3"
@@ -16,6 +17,7 @@ import (
 var tagf = flag.String("tag", "", "tagged release to use")
 var output = flag.String("o", "", "output file")
 var yes = flag.Bool("y", false, "automatically approve all yes/no prompts")
+var system = flag.String("system", "", "target system for the binary")
 
 func main() {
 	flag.Parse()
@@ -40,10 +42,22 @@ func main() {
 		log.Fatal(err)
 	}
 
-	detector, err := NewHostDetector()
+	var detector Detector
+	if system != nil && *system == "all" {
+		detector = &AllDetector{}
+	} else if system != nil && *system != "" {
+		split := strings.Split(*system, "/")
+		if len(split) < 2 {
+			log.Fatal("system descriptor must be os/arch")
+		}
+		detector, err = NewSystemDetector(split[0], split[1])
+	} else {
+		detector, err = NewSystemDetector(runtime.GOOS, runtime.GOARCH)
+	}
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	url, candidates, err := detector.Detect(assets)
 
 	if err != nil {
