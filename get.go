@@ -18,6 +18,7 @@ var tagf = flag.String("tag", "", "tagged release to use")
 var output = flag.String("o", "", "output file")
 var yes = flag.Bool("y", false, "automatically approve all yes/no prompts")
 var system = flag.String("system", "", "target system for the binary")
+var exfile = flag.String("file", "", "file name to extract")
 
 func main() {
 	flag.Parse()
@@ -28,6 +29,11 @@ func main() {
 	}
 
 	repo := flag.Args()[0]
+	if !strings.Contains(repo, "/") {
+		log.Fatal("invalid repo (no '/' found)")
+	}
+	repoparts := strings.Split(repo, "/")
+
 	tag := "latest"
 	if tagf != nil && *tagf != "" {
 		tag = fmt.Sprintf("tags/%s", *tagf)
@@ -104,9 +110,15 @@ func main() {
 
 	body := buf.Bytes()
 
-	extractor := NewExtractor(path.Base(url), &BinaryChooser{})
-	if err != nil {
-		log.Fatal(err)
+	var extractor Extractor
+	if exfile != nil && *exfile != "" {
+		extractor = NewExtractor(path.Base(url), &LiteralFileChooser{
+			File: *exfile,
+		})
+	} else {
+		extractor = NewExtractor(path.Base(url), &BinaryChooser{
+			Tool: repoparts[1],
+		})
 	}
 	bin, err := extractor.Extract(body)
 	if err != nil {

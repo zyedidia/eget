@@ -99,7 +99,7 @@ var (
 	}
 	ArchArm64 = Arch{
 		name:  "arm64",
-		regex: regexp.MustCompile(`(?i)(arm64)`),
+		regex: regexp.MustCompile(`(?i)(arm64|armv8)`),
 	}
 	ArchRiscv64 = Arch{
 		name:  "riscv64",

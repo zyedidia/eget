@@ -10,6 +10,7 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 )
@@ -108,7 +109,7 @@ func (t *TarExtractor) Extract(data []byte) (*ExtractedFile, error) {
 			}
 		}
 	}
-	return nil, fmt.Errorf("target file not found in archive")
+	return nil, fmt.Errorf("target file %v not found in archive", t.File)
 }
 
 type ZipExtractor struct {
@@ -137,7 +138,7 @@ func (z *ZipExtractor) Extract(data []byte) (*ExtractedFile, error) {
 			}, err
 		}
 	}
-	return nil, fmt.Errorf("target file not found in archive")
+	return nil, fmt.Errorf("target file %v not found in archive", z.File)
 }
 
 type SingleFileExtractor struct {
@@ -160,14 +161,32 @@ func (sf *SingleFileExtractor) Extract(data []byte) (*ExtractedFile, error) {
 	}, err
 }
 
-type BinaryChooser struct{}
+type BinaryChooser struct {
+	Tool string
+}
 
 func (b *BinaryChooser) Choose(name string, mode fs.FileMode) bool {
-	return !mode.IsDir() && isExecAny(mode.Perm())
+	return !mode.IsDir() && isExecAny(mode.Perm()) && filepath.Base(name) == b.Tool
+}
+
+func (b *BinaryChooser) String() string {
+	return fmt.Sprintf("exe `%s`", b.Tool)
 }
 
 func isExecAny(mode os.FileMode) bool {
 	return mode&0111 != 0
+}
+
+type LiteralFileChooser struct {
+	File string
+}
+
+func (lf *LiteralFileChooser) Choose(name string, mode fs.FileMode) bool {
+	return filepath.Base(name) == lf.File
+}
+
+func (lf *LiteralFileChooser) String() string {
+	return fmt.Sprintf("`%s`", lf.File)
 }
 
 type FileChooser struct {
@@ -176,6 +195,10 @@ type FileChooser struct {
 
 func (f *FileChooser) Choose(name string, mode fs.FileMode) bool {
 	return f.File.MatchString(name)
+}
+
+func (f *FileChooser) String() string {
+	return fmt.Sprintf("/%s/", f.File)
 }
 
 func NewLicenseChooser() *FileChooser {
