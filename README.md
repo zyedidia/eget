@@ -41,7 +41,7 @@ Application Options:
   -x                   force the extracted file to be executable
       --sha256         show the SHA-256 hash of the downloaded asset
   -v, --version        show version information
-  -h, --help           Show this help message
+  -h, --help           show this help message
 ```
 
 # Examples
