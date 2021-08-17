@@ -9,6 +9,7 @@ var opts struct {
 	DLOnly      bool   `long:"download-only" description:"stop after downloading the asset (no extraction)"`
 	URL         bool   `long:"url" description:"download from the given URL directly"`
 	Asset       string `long:"asset" description:"download a specific asset"`
+	Rename      string `long:"rename" description:"rename extracted file to given name"`
 	Exec        bool   `short:"x" description:"force the extracted file to be executable"`
 	Hash        bool   `long:"sha256" description:"show the SHA-256 hash of the downloaded asset"`
 	Version     bool   `short:"v" long:"version" description:"show version information"`

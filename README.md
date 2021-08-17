@@ -37,6 +37,7 @@ Application Options:
       --download-only  stop after downloading the asset (no extraction)
       --url            download from the given URL directly
       --asset=         download a specific asset
+      --rename=        rename extracted file to given name
   -x                   force the extracted file to be executable
       --sha256         show the SHA-256 hash of the downloaded asset
   -v, --version        show version information
@@ -49,7 +50,7 @@ Application Options:
 $ get zyedidia/micro
 $ get jgm/pandoc
 $ get junegunn/fzf
-$ get -x --asset nvim.appimage neovim/neovim
+$ get -x --asset nvim.appimage --rename nvim neovim/neovim
 $ get zachjs/sv2v
 $ get ogham/exa
 $ get sharkdp/fd

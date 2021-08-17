@@ -223,8 +223,13 @@ func main() {
 
 	// write the extracted file to a file on disk, in the --to directory if
 	// requested
-	out := filepath.Base(bin.Name)
-	if opts.Output != "" {
+	var out string
+	if opts.Rename != "" {
+		out = opts.Rename
+	} else {
+		out = filepath.Base(bin.Name)
+	}
+	if !filepath.IsAbs(out) && opts.Output != "" {
 		out = filepath.Join(opts.Output, out)
 	}
 

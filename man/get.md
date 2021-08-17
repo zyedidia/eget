@@ -52,9 +52,13 @@ header: Get Manual
 
 :    Download using a direct URL rather than auto-detecting a release from GitHub. Example **get --url https://github.com/zyedidia/micro/releases/download/v2.0.10/micro-2.0.10-linux64.tar.gz**.
 
-  `--asset`
+  `--asset=`
 
 :    Download a specific asset. Example: **get --asset nvim.appimage neovim/neovim**.
+
+  `--rename=`
+
+:    Rename extracted file to given name. Example: **get --asset nvim.appimage --rename nvim neovim/neovim**.
 
   `-x`
 
