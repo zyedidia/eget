@@ -5,16 +5,21 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/jessevdk/go-flags"
 	pb "github.com/schollz/progressbar/v3"
 )
+
+func fatal(a ...interface{}) {
+	fmt.Fprintln(os.Stderr, a...)
+	os.Exit(1)
+}
 
 func main() {
 	flagparser := flags.NewParser(&opts, flags.PassDoubleDash|flags.PrintErrors)
@@ -40,6 +45,12 @@ func main() {
 		os.Exit(0)
 	}
 
+	var output io.Writer = os.Stdout
+	if opts.Quiet {
+		opts.Yes = true
+		output = io.Discard
+	}
+
 	// Determine the appropriate Finder to use. If opts.URL is provided, we use
 	// a DirectAssetFinder. Otherwise we use a GithubAssetFinder. When a Github
 	// repo is provided, we assume the repo name is the 'tool' name (for direct
@@ -54,7 +65,7 @@ func main() {
 	} else {
 		repo := args[0]
 		if !strings.Contains(repo, "/") {
-			log.Fatal("invalid repo (no '/' found)")
+			fatal("invalid repo (no '/' found)")
 		}
 		tool = strings.Split(repo, "/")[1]
 
@@ -70,7 +81,7 @@ func main() {
 	}
 	assets, err := finder.Find()
 	if err != nil {
-		log.Fatal(err)
+		fatal(err)
 	}
 
 	// Determine the appropriate detector. If the --system is 'all', we use an
@@ -83,14 +94,14 @@ func main() {
 	} else if opts.System != "" {
 		split := strings.Split(opts.System, "/")
 		if len(split) < 2 {
-			log.Fatal("system descriptor must be os/arch")
+			fatal("system descriptor must be os/arch")
 		}
 		detector, err = NewSystemDetector(split[0], split[1])
 	} else {
 		detector, err = NewSystemDetector(runtime.GOOS, runtime.GOARCH)
 	}
 	if err != nil {
-		log.Fatal(err)
+		fatal(err)
 	}
 
 	// get the url and candidates from the detector
@@ -117,7 +128,7 @@ func main() {
 	}
 
 	// print the URL and ask for confirmation to continue before downloading
-	fmt.Printf("%s\n", url)
+	fmt.Fprintf(output, "%s\n", url)
 	if !opts.Yes {
 		fmt.Print("Download and continue? [Y/n] ")
 
@@ -133,10 +144,32 @@ func main() {
 	// download with progress bar
 	buf := &bytes.Buffer{}
 	err = Download(url, buf, func(size int64) *pb.ProgressBar {
-		return pb.DefaultBytes(size, "Downloading")
+		var pbout io.Writer = os.Stderr
+		if opts.Quiet {
+			pbout = io.Discard
+		}
+		return pb.NewOptions64(size,
+			pb.OptionSetWriter(pbout),
+			pb.OptionShowBytes(true),
+			pb.OptionSetWidth(10),
+			pb.OptionThrottle(65*time.Millisecond),
+			pb.OptionShowCount(),
+			pb.OptionSpinnerType(14),
+			pb.OptionFullWidth(),
+			pb.OptionSetDescription("Downloading"),
+			pb.OptionOnCompletion(func() {
+				fmt.Fprint(pbout, "\n")
+			}),
+			pb.OptionSetTheme(pb.Theme{
+				Saucer:        "=",
+				SaucerHead:    ">",
+				SaucerPadding: " ",
+				BarStart:      "[",
+				BarEnd:        "]",
+			}))
 	})
 	if err != nil {
-		log.Fatalf("%s (URL: %s)\n", err, url)
+		fatal(fmt.Sprintf("%s (URL: %s)", err, url))
 	}
 
 	body := buf.Bytes()
@@ -202,10 +235,10 @@ func main() {
 	// write the file using the same perms it had in the archive
 	f, err := os.OpenFile(out, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, bin.Mode)
 	if err != nil {
-		log.Fatal(err)
+		fatal(err)
 	}
 	f.Write(bin.Data)
 	f.Close()
 
-	fmt.Printf("Extracted `%s` to `%s`\n", bin.Name, out)
+	fmt.Fprintf(output, "Extracted `%s` to `%s`\n", bin.Name, out)
 }
