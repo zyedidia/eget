@@ -83,7 +83,7 @@ func main() {
 		}
 		var choice int
 		for {
-			fmt.Print("Please select one (enter its number): ")
+			fmt.Print("Enter selection number: ")
 			_, err := fmt.Scanf("%d", &choice)
 			if err == nil && (choice <= 0 || choice > len(candidates)) {
 				err = fmt.Errorf("%d is out of bounds", choice)
