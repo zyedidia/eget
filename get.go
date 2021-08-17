@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"fmt"
 	"io"
 	"log"
@@ -139,6 +140,11 @@ func main() {
 	}
 
 	body := buf.Bytes()
+
+	if opts.Hash {
+		sum := sha256.Sum256(body)
+		fmt.Printf("%x\n", sum)
+	}
 
 	// Determine which extractor to use. If --download-only is provided, we
 	// just "extract" the downloaded archive to itself. Otherwise we try to
