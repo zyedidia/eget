@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -11,32 +10,43 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/jessevdk/go-flags"
 	pb "github.com/schollz/progressbar/v3"
 )
 
-var tagf = flag.String("tag", "", "tagged release to use")
-var output = flag.String("o", "", "output file")
-var yes = flag.Bool("y", false, "automatically approve all yes/no prompts")
-var system = flag.String("system", "", "target system for the binary")
-var exfile = flag.String("file", "", "file name to extract")
-
 func main() {
-	flag.Parse()
+	flagparser := flags.NewParser(&opts, flags.PassDoubleDash|flags.PrintErrors)
+	flagparser.Usage = "[OPTIONS] REPO"
+	args, err := flagparser.Parse()
+	if err != nil {
+		os.Exit(1)
+	}
 
-	if len(flag.Args()) <= 0 {
-		fmt.Println("no get target given")
+	if opts.Version {
+		fmt.Println("get version", Version)
 		os.Exit(0)
 	}
 
-	repo := flag.Args()[0]
+	if opts.Help {
+		flagparser.WriteHelp(os.Stdout)
+		os.Exit(0)
+	}
+
+	if len(args) <= 0 {
+		fmt.Println("no get target given")
+		flagparser.WriteHelp(os.Stdout)
+		os.Exit(0)
+	}
+
+	repo := args[0]
 	if !strings.Contains(repo, "/") {
 		log.Fatal("invalid repo (no '/' found)")
 	}
 	repoparts := strings.Split(repo, "/")
 
 	tag := "latest"
-	if tagf != nil && *tagf != "" {
-		tag = fmt.Sprintf("tags/%s", *tagf)
+	if opts.Tag != "" {
+		tag = fmt.Sprintf("tags/%s", opts.Tag)
 	}
 
 	gh := &GithubAssetFinder{
@@ -49,10 +59,10 @@ func main() {
 	}
 
 	var detector Detector
-	if system != nil && *system == "all" {
+	if opts.System == "all" {
 		detector = &AllDetector{}
-	} else if system != nil && *system != "" {
-		split := strings.Split(*system, "/")
+	} else if opts.System != "" {
+		split := strings.Split(opts.System, "/")
 		if len(split) < 2 {
 			log.Fatal("system descriptor must be os/arch")
 		}
@@ -88,7 +98,7 @@ func main() {
 
 	fmt.Printf("%s\n", url)
 
-	if !*yes {
+	if !opts.Yes {
 		fmt.Print("Download and continue? [Y/n] ")
 
 		var input string
@@ -111,9 +121,9 @@ func main() {
 	body := buf.Bytes()
 
 	var extractor Extractor
-	if exfile != nil && *exfile != "" {
+	if opts.ExtractFile != "" {
 		extractor = NewExtractor(path.Base(url), &LiteralFileChooser{
-			File: *exfile,
+			File: opts.ExtractFile,
 		})
 	} else {
 		extractor = NewExtractor(path.Base(url), &BinaryChooser{
@@ -126,8 +136,8 @@ func main() {
 	}
 
 	var out string
-	if output != nil && *output != "" {
-		out = *output
+	if opts.Output != "" {
+		out = opts.Output
 	} else {
 		out = filepath.Base(bin.Name)
 	}

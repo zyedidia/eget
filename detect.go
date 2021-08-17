@@ -90,7 +90,7 @@ var (
 		regex: regexp.MustCompile(`(?i)(x64|amd64|x86(-|_)64)`),
 	}
 	ArchI386 = Arch{
-		name:  "i386",
+		name:  "386",
 		regex: regexp.MustCompile(`(?i)(x32|amd32|x86(-|_)32|i?386)`),
 	}
 	ArchArm = Arch{

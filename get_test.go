@@ -16,7 +16,7 @@ func TestGet(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	detector, err := NewHostDetector()
+	detector, err := NewSystemDetector("linux", "amd64")
 	if err != nil {
 		t.Fatal(err)
 	}
