@@ -26,19 +26,19 @@ header: Get Manual
 # OPTIONS
   `-t, --tag=`
 
-:    Use the given tagged release instead of the latest release. Example: **get -t nightly zyedidia/micro**.
+:    Use the given tagged release instead of the latest release. Example: **`get -t nightly zyedidia/micro`**.
 
   `--to=`
 
-:    Extract the executable to the given directory. Example: **get zyedidia/micro --to /usr/local/bin**.
+:    Extract the executable to the given directory. Example: **`get zyedidia/micro --to /usr/local/bin`**.
 
   `-s, --system=`
 
-:    Use the given system as the target instead of the host. Systems follow the notation 'OS/Arch', where OS is a valid OS (darwin, windows, linux, netbsd, openbsd, freebsd, android, illumos, solaris, plan9), and Arch is a valid architecture (amd64, 386, arm, arm64, riscv64). If the special value **all** is used, all possibilities are given and the user must select manually. Example: **get -s darwin/amd64 zyedidia/micro**.
+:    Use the given system as the target instead of the host. Systems follow the notation 'OS/Arch', where OS is a valid OS (darwin, windows, linux, netbsd, openbsd, freebsd, android, illumos, solaris, plan9), and Arch is a valid architecture (amd64, 386, arm, arm64, riscv64). If the special value **all** is used, all possibilities are given and the user must select manually. Example: **`get -s darwin/amd64 zyedidia/micro`**.
 
   `-f, --file=`
 
-:    Extract the file with the given filename. You may want use this option to extract non-binary files. Example: **get -f LICENSE zyedidia/micro**.
+:    Extract the file with the given filename. You may want use this option to extract non-binary files. Example: **`get -f LICENSE zyedidia/micro`**.
 
   `-q, --quiet`
 
@@ -50,19 +50,19 @@ header: Get Manual
 
   `--url`
 
-:    Download using a direct URL rather than auto-detecting a release from GitHub. Example **get --url https://github.com/zyedidia/micro/releases/download/v2.0.10/micro-2.0.10-linux64.tar.gz**.
+:    Download using a direct URL rather than auto-detecting a release from GitHub. Example **`get --url https://github.com/zyedidia/micro/releases/download/v2.0.10/micro-2.0.10-linux64.tar.gz`**.
 
   `--asset=`
 
-:    Download a specific asset. Example: **get --asset nvim.appimage neovim/neovim**.
+:    Download a specific asset. Example: **`get --asset nvim.appimage neovim/neovim`**.
 
   `--rename=`
 
-:    Rename extracted file to given name. Example: **get --asset nvim.appimage --rename nvim neovim/neovim**.
+:    Rename extracted file to given name. Example: **`get --asset nvim.appimage --rename nvim neovim/neovim`**.
 
   `-x`
 
-:    Force the extracted file to be executable. Example: **get -x --asset nvim.appimage neovim/neovim**.
+:    Force the extracted file to be executable. Example: **`get -x --asset nvim.appimage neovim/neovim`**.
 
   `--sha256`
 
