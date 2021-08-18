@@ -44,7 +44,7 @@ Usage:
 Application Options:
   -t, --tag=           tagged release to use instead of latest
       --to=            extract to directory
-  -s, --system=        target system to download for
+  -s, --system=        target system to download for (use "all" for all choices)
   -f, --file=          file name to extract
   -q, --quiet          only print essential output
       --download-only  stop after downloading the asset (no extraction)

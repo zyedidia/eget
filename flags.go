@@ -3,7 +3,7 @@ package main
 var opts struct {
 	Tag         string `short:"t" long:"tag" description:"tagged release to use instead of latest"`
 	Output      string `long:"to" description:"extract to directory"`
-	System      string `short:"s" long:"system" description:"target system to download for"`
+	System      string `short:"s" long:"system" description:"target system to download for (use \"all\" for all choices)"`
 	ExtractFile string `short:"f" long:"file" description:"file name to extract"`
 	Quiet       bool   `short:"q" long:"quiet" description:"only print essential output"`
 	DLOnly      bool   `long:"download-only" description:"stop after downloading the asset (no extraction)"`

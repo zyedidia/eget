@@ -9,6 +9,12 @@ build:
 install:
 	go install -trimpath -ldflags "-s -w $(GOVARS)" .
 
+fmt:
+	gofmt -s -w .
+
+vet:
+	go vet
+
 eget.1: man/eget.md
 	pandoc man/eget.md -s -t man -o eget.1
 
@@ -24,8 +30,11 @@ package: build eget.1
 		tar -czf eget-$(VERSION)-$(SYSTEM).tar.gz eget-$(VERSION)-$(SYSTEM);\
 	fi
 
+version:
+	echo "package main\n\nvar Version = \"$(VERSION)+src\"" > version.go
+
 clean:
 	rm -f eget eget.exe eget.1 eget-*.tar.gz eget-*.zip
 	rm -rf eget-*/
 
-.PHONY: build clean install package
+.PHONY: build clean install package version fmt vet
