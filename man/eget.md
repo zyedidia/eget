@@ -12,15 +12,15 @@ header: Eget Manual
 
 # DESCRIPTION
   Eget is a tool for downloading and extracting prebuilt binaries from releases
-  on GitHub. To use it, provide a repository and `eget` will search through the
+  on GitHub. To use it, provide a repository and Eget will search through the
   assets from the latest release in an attempt to find a suitable prebuilt
   binary for your system. If one is found, the asset will be downloaded and
-  `eget` will extract the binary to the current directory. eget should only be
+  Eget will extract the binary to the current directory. Eget should only be
   used for installing simple, static prebuilt binaries, where the extracted
   binary is all that is needed for installation. For more complex installation,
   you may use the `--download-only` option, and perform extraction manually.
 
-  The behavior of eget is configurable in a number of ways via options.
+  The behavior of Eget is configurable in a number of ways via options.
   Documentation for these options is provided below.
 
 # OPTIONS
@@ -46,7 +46,7 @@ header: Eget Manual
 
   `--download-only`
 
-:    Stop after downloading the asset. This prevents eget from performing extraction, allowing you to perform manual installation after the asset is downloaded.
+:    Stop after downloading the asset. This prevents Eget from performing extraction, allowing you to perform manual installation after the asset is downloaded.
 
   `--url`
 

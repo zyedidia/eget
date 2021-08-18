@@ -9,7 +9,11 @@ import (
 func pkg(tos, arch string, done chan bool) {
 	cmd := exec.Command("make", "package")
 	cmd.Env = os.Environ()
-	cmd.Env = append(cmd.Env, fmt.Sprintf("GOOS=%s", tos), fmt.Sprintf("GOARCH=%s", arch))
+	cmd.Env = append(cmd.Env,
+		fmt.Sprintf("GOOS=%s", tos),
+		fmt.Sprintf("GOARCH=%s", arch),
+		"CGO_ENABLED=0",
+	)
 	err := cmd.Run()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)

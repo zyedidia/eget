@@ -1,24 +1,25 @@
-# eget: easy pre-built binary installation
+# Eget: easy pre-built binary installation
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/zyedidia/eget/blob/master/LICENSE)
 
-**eget** is a tool for downloading and extracting prebuilt binaries from releases
-on GitHub. To use it, provide a repository and `eget` will search through the
-assets from the latest release in an attempt to find a suitable prebuilt
-binary for your system. If one is found, the asset will be downloaded and
-`eget` will extract the binary to the current directory. eget should only be
-used for installing simple, static prebuilt binaries, where the extracted
-binary is all that is needed for installation. For more complex installation,
-you may use the `--download-only` option, and perform extraction manually.
+**Eget** is the best way to easily get pre-built binaries for your favorite
+tools. It downloads and extracts pre-built binaries from releases on GitHub. To
+use it, provide a repository and Eget will search through the assets from the
+latest release in an attempt to find a suitable prebuilt binary for your
+system. If one is found, the asset will be downloaded and Eget will extract
+the binary to the current directory. Eget should only be used for installing
+simple, static prebuilt binaries, where the extracted binary is all that is
+needed for installation. For more complex installation, you may use the
+`--download-only` option, and perform extraction manually.
 
-![eget Demo](https://github.com/zyedidia/blobs/blob/master/eget-demo.gif)
+![Eget Demo](https://github.com/zyedidia/blobs/blob/master/eget-demo.gif)
 
 For software maintainers, if you provide prebuilt binaries on GitHub, you can list `eget`
 as a one-line method for users to install your software.
 
-# How to get eget
+# How to get Eget
 
-Before you can get anything, you have to get eget.
+Before you can get anything, you have to get Eget.
 
 ```
 $ go get github.com/zyedidia/eget
@@ -68,15 +69,15 @@ $ eget zachjs/sv2v
 
 ### How is this different from a package manager?
 
-eget only downloads pre-built binaries uploaded to GitHub by the developers of the repository. It does not maintain a central list of packages, nor does it do any dependency management. eget does not "install" executables by placing them in system-wide directories (such as `/usr/local/bin`) unless instructed, and it does not maintain a registry for uninstallation. eget works best for installing software that comes as a single binary with no additional files needed (CLI tools made in Go, Rust, or Haskell tend to fit this description).
+Eget only downloads pre-built binaries uploaded to GitHub by the developers of the repository. It does not maintain a central list of packages, nor does it do any dependency management. Eget does not "install" executables by placing them in system-wide directories (such as `/usr/local/bin`) unless instructed, and it does not maintain a registry for uninstallation. Eget works best for installing software that comes as a single binary with no additional files needed (CLI tools made in Go, Rust, or Haskell tend to fit this description).
 
 ### Is this secure?
 
-eget does not run any downloaded code -- it just finds executables from GitHub releases and downloads/extracts them. If you trust the code you are downloading (i.e. if you trust downloading pre-built binaries from GitHub) then using eget is perfectly safe. You can use the `--sha256` option to have eget print the SHA-256 checksum of the downloaded file, and then you can check if this matches the checksum provided by the developers of the tool you downloaded (if they provide one).
+Eget does not run any downloaded code -- it just finds executables from GitHub releases and downloads/extracts them. If you trust the code you are downloading (i.e. if you trust downloading pre-built binaries from GitHub) then using Eget is perfectly safe. You can use the `--sha256` option to have Eget print the SHA-256 checksum of the downloaded file, and then you can check if this matches the checksum provided by the developers of the tool you downloaded (if they provide one).
 
 ### Does this work only for GitHub repositories?
 
-At the moment eget only supports searching GitHub releases. If you provide a direct URL instead of a GitHub repository and use the `--url` option, eget will skip the detection phase and download directly from the given URL.
+At the moment Eget only supports searching GitHub releases. If you provide a direct URL instead of a GitHub repository and use the `--url` option, Eget will skip the detection phase and download directly from the given URL.
 
 # Contributing
 
