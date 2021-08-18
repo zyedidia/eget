@@ -7,7 +7,6 @@ var opts struct {
 	ExtractFile string `short:"f" long:"file" description:"file name to extract"`
 	Quiet       bool   `short:"q" long:"quiet" description:"only print essential output"`
 	DLOnly      bool   `long:"download-only" description:"stop after downloading the asset (no extraction)"`
-	URL         bool   `long:"url" description:"download from the given URL directly"`
 	Asset       string `long:"asset" description:"download a specific asset"`
 	Rename      string `long:"rename" description:"rename extracted file to given name"`
 	Exec        bool   `short:"x" description:"force the extracted file to be executable"`

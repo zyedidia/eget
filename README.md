@@ -32,9 +32,14 @@ Pre-built binaries and a quick install script coming soon!
 
 # Options
 
+The `PROJECT` argument passed to Eget should either be a GitHub repository,
+formatted as `user/repo`, in which case Eget will search the release assets, or
+a direct URL, in which case Eget will directly download and extract from the
+given URL.
+
 ```
 Usage:
-  eget [OPTIONS] REPO
+  eget [OPTIONS] PROJECT
 
 Application Options:
   -t, --tag=           tagged release to use instead of latest
@@ -43,7 +48,6 @@ Application Options:
   -f, --file=          file name to extract
   -q, --quiet          only print essential output
       --download-only  stop after downloading the asset (no extraction)
-      --url            download from the given URL directly
       --asset=         download a specific asset
       --rename=        rename extracted file to given name
   -x                   force the extracted file to be executable
@@ -77,7 +81,7 @@ Eget does not run any downloaded code -- it just finds executables from GitHub r
 
 ### Does this work only for GitHub repositories?
 
-At the moment Eget only supports searching GitHub releases. If you provide a direct URL instead of a GitHub repository and use the `--url` option, Eget will skip the detection phase and download directly from the given URL.
+At the moment Eget only supports searching GitHub releases. If you provide a direct URL instead of a GitHub repository, Eget will skip the detection phase and download directly from the given URL.
 
 # Contributing
 

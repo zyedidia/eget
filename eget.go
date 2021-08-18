@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -21,9 +22,15 @@ func fatal(a ...interface{}) {
 	os.Exit(1)
 }
 
+// IsUrl returns true if s is a valid URL.
+func IsUrl(s string) bool {
+	u, err := url.Parse(s)
+	return err == nil && u.Scheme != "" && u.Host != ""
+}
+
 func main() {
 	flagparser := flags.NewParser(&opts, flags.PassDoubleDash|flags.PrintErrors)
-	flagparser.Usage = "[OPTIONS] REPO"
+	flagparser.Usage = "[OPTIONS] PROJECT"
 	args, err := flagparser.Parse()
 	if err != nil {
 		os.Exit(1)
@@ -56,7 +63,7 @@ func main() {
 	// URLs, the tool name is unknown and remains empty).
 	var finder Finder
 	var tool string
-	if opts.URL {
+	if IsUrl(args[0]) {
 		finder = &DirectAssetFinder{
 			URL: args[0],
 		}

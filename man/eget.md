@@ -8,7 +8,7 @@ header: Eget Manual
   eget - easily install prebuilt binaries from GitHub
 
 # SYNOPSIS
-  eget `[--version] [--help] [OPTIONS] REPO`
+  eget `[--version] [--help] [OPTIONS] PROJECT`
 
 # DESCRIPTION
   Eget is a tool for downloading and extracting prebuilt binaries from releases
@@ -19,6 +19,11 @@ header: Eget Manual
   used for installing simple, static prebuilt binaries, where the extracted
   binary is all that is needed for installation. For more complex installation,
   you may use the `--download-only` option, and perform extraction manually.
+
+  The **`PROJECT`** argument passed to Eget should either be a GitHub
+  repository, formatted as **`user/repo`**, in which case Eget will search the
+  release assets, or a direct URL, in which case Eget will directly download
+  and extract from the given URL.
 
   The behavior of Eget is configurable in a number of ways via options.
   Documentation for these options is provided below.
@@ -47,10 +52,6 @@ header: Eget Manual
   `--download-only`
 
 :    Stop after downloading the asset. This prevents Eget from performing extraction, allowing you to perform manual installation after the asset is downloaded.
-
-  `--url`
-
-:    Download using a direct URL rather than auto-detecting a release from GitHub. Example **`eget --url https://github.com/zyedidia/micro/releases/download/v2.0.10/micro-2.0.10-linux64.tar.gz`**.
 
   `--asset=`
 
