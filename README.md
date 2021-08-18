@@ -59,7 +59,21 @@ $ get jgm/pandoc --to /usr/local/bin
 $ get junegunn/fzf
 $ get -x --asset nvim.appimage --rename nvim neovim/neovim
 $ get ogham/exa
-$ get sharkdp/fd
+$ get --system darwin/amd64 sharkdp/fd
 $ get BurntSushi/ripgrep
 $ get zachjs/sv2v
 ```
+
+# FAQ
+
+### How is this different from a package manager?
+
+Get only downloads pre-built binaries uploaded to GitHub by the developers of the repository. It does not maintain a central list of packages, nor does it do any dependency management. Get does not "install" executables by placing them in system-wide directories (such as `/usr/local/bin`) unless instructed, and it does not maintain a registry for uninstallation. Get works best for installing software that comes as a single binary with no additional files needed (CLI tools made in Go, Rust, or Haskell tend to fit this description).
+
+### Is this secure?
+
+Get does not run any downloaded code -- it just finds executables from GitHub releases and downloads/extracts them. If you trust the code you are downloading (i.e. if you trust downloading pre-built binaries from GitHub) then using get is perfectly safe. You can use the `--sha256` option to have get print the SHA-256 checksum of the downloaded file, and then you can check if this matches the checksum provided by the developers of the tool you downloaded (if they provide one).
+
+### Does this work only for GitHub repositories?
+
+At the moment get only supports searching GitHub releases. If you provide a direct URL instead of a GitHub repository and use the `--url` option, get will skip the detection phase and download directly from the given URL.
