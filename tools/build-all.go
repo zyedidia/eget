@@ -6,7 +6,7 @@ import (
 	"os/exec"
 )
 
-func pkg(tos, arch string, done chan bool) {
+func pkg(tos, arch string) {
 	cmd := exec.Command("make", "package")
 	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env,
@@ -18,7 +18,6 @@ func pkg(tos, arch string, done chan bool) {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}
-	done <- true
 }
 
 func main() {
@@ -36,13 +35,8 @@ func main() {
 		{"windows", "386"},
 	}
 
-	done := make(chan bool)
 	for _, t := range targets {
 		fmt.Printf("%s-%s\n", t.OS, t.Arch)
-		go pkg(t.OS, t.Arch, done)
-	}
-
-	for range targets {
-		<-done
+		pkg(t.OS, t.Arch)
 	}
 }

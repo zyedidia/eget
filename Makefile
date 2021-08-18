@@ -23,10 +23,11 @@ package: build eget.1
 	cp README.md eget-$(VERSION)-$(SYSTEM)
 	cp LICENSE eget-$(VERSION)-$(SYSTEM)
 	cp eget.1 eget-$(VERSION)-$(SYSTEM)
-	cp eget eget-$(VERSION)-$(SYSTEM)
 	if [ ${GOOS} = "windows" ]; then\
+		cp eget.exe eget-$(VERSION)-$(SYSTEM);\
 		zip -r -q -T eget-$(VERSION)-$(SYSTEM).zip eget-$(VERSION)-$(SYSTEM);\
 	else\
+		cp eget eget-$(VERSION)-$(SYSTEM);\
 		tar -czf eget-$(VERSION)-$(SYSTEM).tar.gz eget-$(VERSION)-$(SYSTEM);\
 	fi
 
