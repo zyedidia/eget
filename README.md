@@ -1,5 +1,6 @@
 # Eget: easy pre-built binary installation
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/zyedidia/eget)](https://goreportcard.com/report/github.com/zyedidia/eget)
 [![Release](https://img.shields.io/github/release/zyedidia/eget.svg?label=Release)](https://github.com/zyedidia/eget/releases)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/zyedidia/eget/blob/master/LICENSE)
 
