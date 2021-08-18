@@ -1,5 +1,6 @@
 # Eget: easy pre-built binary installation
 
+[![Release](https://img.shields.io/github/release/zyedidia/eget.svg?label=Release)](https://github.com/zyedidia/eget/releases)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/zyedidia/eget/blob/master/LICENSE)
 
 **Eget** is the best way to easily get pre-built binaries for your favorite
