@@ -27,7 +27,7 @@ Before you can get anything, you have to get Eget.
 $ curl https://zyedidia.github.io/eget.sh | sh
 ```
 
-If you would like to verify the script, the sha256 checksum is `0e64b8a3c13f531da005096cc364ac77835bda54276fedef6c62f3dbdc1ee919`.
+If you would like to verify the script, the sha256 checksum is `0e64b8a3c13f531da005096cc364ac77835bda54276fedef6c62f3dbdc1ee919` (use `shasum -a 256 eget.sh` after downloading).
 
 ### Pre-built binaries
 
