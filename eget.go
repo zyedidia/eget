@@ -30,7 +30,7 @@ func main() {
 	}
 
 	if opts.Version {
-		fmt.Println("get version", Version)
+		fmt.Println("eget version", Version)
 		os.Exit(0)
 	}
 
@@ -40,7 +40,7 @@ func main() {
 	}
 
 	if len(args) <= 0 {
-		fmt.Println("no get target given")
+		fmt.Println("no target given")
 		flagparser.WriteHelp(os.Stdout)
 		os.Exit(0)
 	}

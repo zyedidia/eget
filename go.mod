@@ -1,4 +1,4 @@
-module github.com/zyedidia/get
+module github.com/zyedidia/eget
 
 go 1.16
 

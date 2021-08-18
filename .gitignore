@@ -1,5 +1,5 @@
-get
-get.exe
-get-*
+eget
+eget.exe
+eget-*
 todo.txt
-get.1
+eget.1
