@@ -35,7 +35,7 @@ If you would like to verify the script, the sha256 checksum is `0e64b8a3c13f531d
 
 ### Pre-built binaries
 
-We provide pre-built binaries on the [releases](https://github.com/zyedidia/eget/releases) page.
+Pre-built binaries are available on the [releases](https://github.com/zyedidia/eget/releases) page.
 
 ### From source
 
