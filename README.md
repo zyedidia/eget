@@ -77,3 +77,7 @@ Get does not run any downloaded code -- it just finds executables from GitHub re
 ### Does this work only for GitHub repositories?
 
 At the moment get only supports searching GitHub releases. If you provide a direct URL instead of a GitHub repository and use the `--url` option, get will skip the detection phase and download directly from the given URL.
+
+# Contributing
+
+If you find a bug, have a suggestion, or something else, please open an issue for discussion. Pull requests will only be accepted if they close an issue marked as "pr-approved".
