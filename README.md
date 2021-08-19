@@ -19,6 +19,20 @@ needed for installation. For more complex installation, you may use the
 For software maintainers, if you provide prebuilt binaries on GitHub, you can list `eget`
 as a one-line method for users to install your software.
 
+# Examples
+
+```
+eget zyedidia/micro --tag nightly
+eget jgm/pandoc --to /usr/local/bin
+eget junegunn/fzf
+eget -x --asset nvim.appimage --to nvim neovim/neovim
+eget ogham/exa
+eget --system darwin/amd64 sharkdp/fd
+eget BurntSushi/ripgrep
+eget -f eget.1 zyedidia/eget
+eget zachjs/sv2v
+```
+
 # How to get Eget
 
 Before you can get anything, you have to get Eget.
@@ -77,20 +91,6 @@ Application Options:
       --sha256         show the SHA-256 hash of the downloaded asset
   -v, --version        show version information
   -h, --help           show this help message
-```
-
-# Examples
-
-```
-eget zyedidia/micro --tag nightly
-eget jgm/pandoc --to /usr/local/bin
-eget junegunn/fzf
-eget -x --asset nvim.appimage --to nvim neovim/neovim
-eget ogham/exa
-eget --system darwin/amd64 sharkdp/fd
-eget BurntSushi/ripgrep
-eget -f eget.1 zyedidia/eget
-eget zachjs/sv2v
 ```
 
 # FAQ
