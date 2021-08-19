@@ -79,10 +79,14 @@ func main() {
 		opts.System = "all"
 	} else {
 		repo := args[0]
-		if !strings.Contains(repo, "/") {
-			fatal("invalid repo (no '/' found)")
+		if strings.Count(repo, "/") != 1 {
+			fatal("invalid argument (must be of the form `user/repo`)")
 		}
-		tool = strings.Split(repo, "/")[1]
+		parts := strings.Split(repo, "/")
+		if parts[0] == "" || parts[1] == "" {
+			fatal("invalid argument (must be of the form `user/repo`)")
+		}
+		tool = parts[1]
 
 		tag := "latest"
 		if opts.Tag != "" {
