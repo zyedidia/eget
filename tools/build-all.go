@@ -14,7 +14,6 @@ func pkg(tos, arch string) {
 	cmd.Env = append(cmd.Env,
 		fmt.Sprintf("GOOS=%s", tos),
 		fmt.Sprintf("GOARCH=%s", arch),
-		"CGO_ENABLED=0",
 	)
 	err := cmd.Run()
 	if err != nil {
@@ -28,7 +27,7 @@ func main() {
 		Arch string
 	}{
 		{"darwin", "amd64"},
-		{"darwin", "arm64"},
+		// {"darwin", "arm64"},
 		{"linux", "amd64"},
 		{"linux", "386"},
 		{"linux", "arm64"},

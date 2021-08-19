@@ -106,7 +106,7 @@ Eget does not run any downloaded code -- it just finds executables from GitHub r
 
 ### Does this work only for GitHub repositories?
 
-At the moment Eget only supports searching GitHub releases. If you provide a direct URL instead of a GitHub repository, Eget will skip the detection phase and download directly from the given URL.
+At the moment Eget only supports searching GitHub releases and direct URLs. If you provide a direct URL instead of a GitHub repository, Eget will skip the detection phase and download directly from the given URL.
 
 # Contributing
 
