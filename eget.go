@@ -28,6 +28,15 @@ func IsUrl(s string) bool {
 	return err == nil && u.Scheme != "" && u.Host != ""
 }
 
+// IsDirectory returns true if the file at 'path' is a directory.
+func IsDirectory(path string) bool {
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return fileInfo.IsDir()
+}
+
 func main() {
 	flagparser := flags.NewParser(&opts, flags.PassDoubleDash|flags.PrintErrors)
 	flagparser.Usage = "[OPTIONS] PROJECT"
@@ -230,14 +239,11 @@ func main() {
 
 	// write the extracted file to a file on disk, in the --to directory if
 	// requested
-	var out string
-	if opts.Rename != "" {
-		out = opts.Rename
-	} else {
-		out = filepath.Base(bin.Name)
-	}
-	if !filepath.IsAbs(out) && opts.Output != "" {
+	out := filepath.Base(bin.Name)
+	if opts.Output != "" && IsDirectory(opts.Output) {
 		out = filepath.Join(opts.Output, out)
+	} else if opts.Output != "" {
+		out = opts.Output
 	}
 
 	if opts.Exec {

@@ -35,7 +35,7 @@ header: Eget Manual
 
   `--to=`
 
-:    Extract the executable to the given directory. Example: **`eget zyedidia/micro --to /usr/local/bin`**.
+:    Move the executable to the given name after extraction. Example: **`eget zyedidia/micro --to /usr/local/bin`**. Example: **`eget --asset nvim.appimage --to nvim neovim/neovim`**.
 
   `-s, --system=`
 
@@ -56,10 +56,6 @@ header: Eget Manual
   `--asset=`
 
 :    Download a specific asset. Example: **`eget --asset nvim.appimage neovim/neovim`**.
-
-  `--rename=`
-
-:    Rename extracted file to given name. Example: **`eget --asset nvim.appimage --rename nvim neovim/neovim`**.
 
   `-x`
 
