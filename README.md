@@ -85,7 +85,7 @@ Application Options:
 eget zyedidia/micro --tag nightly
 eget jgm/pandoc --to /usr/local/bin
 eget junegunn/fzf
-eget -x --asset nvim.appimage --rename nvim neovim/neovim
+eget -x --asset nvim.appimage --to nvim neovim/neovim
 eget ogham/exa
 eget --system darwin/amd64 sharkdp/fd
 eget BurntSushi/ripgrep
