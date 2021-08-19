@@ -72,7 +72,7 @@ Application Options:
   -f, --file=          file name to extract
   -q, --quiet          only print essential output
       --download-only  stop after downloading the asset (no extraction)
-      --asset=         download a specific asset
+      --asset=         download a specific asset containing the given string
   -x                   force the extracted file to be executable
       --sha256         show the SHA-256 hash of the downloaded asset
   -v, --version        show version information

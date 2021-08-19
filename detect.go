@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path"
 	"regexp"
+	"strings"
 )
 
 // A Detector selects an asset from a list of possibilities.
@@ -150,7 +151,7 @@ type SingleAssetDetector struct {
 
 func (s *SingleAssetDetector) Detect(assets []string) (string, []string, error) {
 	for _, a := range assets {
-		if path.Base(a) == s.Asset {
+		if strings.Contains(path.Base(a), s.Asset) {
 			return a, nil, nil
 		}
 	}

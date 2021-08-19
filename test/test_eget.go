@@ -31,8 +31,8 @@ func main() {
 	must(run(eget, "jgm/pandoc"))
 	must(fileExists("pandoc"))
 
-	// must(run(eget, "zyedidia/micro", "--tag", "nightly"))
-	// must(fileExists("micro"))
+	must(run(eget, "zyedidia/micro", "--tag", "nightly", "--asset", "osx"))
+	must(fileExists("micro"))
 
 	must(run(eget, "-x", "--asset", "nvim.appimage", "--to", "nvim", "neovim/neovim"))
 	must(fileExists("nvim"))
