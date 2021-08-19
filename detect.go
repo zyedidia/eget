@@ -134,14 +134,10 @@ var goarchmap = map[string]Arch{
 type AllDetector struct{}
 
 func (a *AllDetector) Detect(assets []string) (string, []string, error) {
-	all := make([]string, 0, len(assets))
-	for _, asset := range assets {
-		all = append(all, asset)
+	if len(assets) == 1 {
+		return assets[0], nil, nil
 	}
-	if len(all) == 1 {
-		return all[0], nil, nil
-	}
-	return "", all, fmt.Errorf("%d matches found", len(all))
+	return "", assets, fmt.Errorf("%d matches found", len(assets))
 }
 
 // SingleAssetDetector finds a single named asset.
