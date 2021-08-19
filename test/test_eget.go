@@ -28,7 +28,7 @@ func must(err error) {
 func main() {
 	eget := os.Getenv("EGET_BIN")
 
-	must(run(eget, "jgm/pandoc"))
+	must(run(eget, "--system", "linux/amd64", "jgm/pandoc"))
 	must(fileExists("pandoc"))
 
 	must(run(eget, "zyedidia/micro", "--tag", "nightly", "--asset", "osx"))
