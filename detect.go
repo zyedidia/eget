@@ -150,12 +150,21 @@ type SingleAssetDetector struct {
 }
 
 func (s *SingleAssetDetector) Detect(assets []string) (string, []string, error) {
+	var candidates []string
 	for _, a := range assets {
-		if strings.Contains(path.Base(a), s.Asset) {
+		if path.Base(a) == s.Asset {
 			return a, nil, nil
 		}
+		if strings.Contains(path.Base(a), s.Asset) {
+			candidates = append(candidates, a)
+		}
 	}
-	return "", nil, fmt.Errorf("asset %s not found", s.Asset)
+	if len(candidates) == 1 {
+		return candidates[0], nil, nil
+	} else if len(candidates) > 1 {
+		return "", candidates, fmt.Errorf("%d candidates found for asset `%s`", len(candidates), s.Asset)
+	}
+	return "", nil, fmt.Errorf("asset `%s` not found", s.Asset)
 }
 
 // A SystemDetector matches a particular OS/Arch system pair.

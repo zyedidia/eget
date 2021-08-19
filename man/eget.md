@@ -55,7 +55,7 @@ header: Eget Manual
 
   `--asset=`
 
-:    Download a specific asset containing the given string. Example: **`eget --asset nvim.appimage neovim/neovim`**.
+:    Download a specific asset containing the given string. If there is an exact match with an asset, that asset is used regardless. Example: **`eget --asset nvim.appimage neovim/neovim`**.
 
   `-x`
 
