@@ -12,11 +12,7 @@ import (
 // size of the file being downloaded, and the download will write to the
 // returned progress bar.
 func Download(url string, out io.Writer, getbar func(size int64) *pb.ProgressBar) error {
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return err
-	}
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := http.Get(url)
 	if err != nil {
 		return err
 	}
