@@ -3,3 +3,5 @@ eget.exe
 eget-*
 todo.txt
 eget.1
+/test/*
+!/test/test_eget.go

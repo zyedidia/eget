@@ -15,6 +15,9 @@ fmt:
 vet:
 	go vet
 
+test: eget
+	cd test; EGET_BIN=../eget go run test_eget.go
+
 eget.1: man/eget.md
 	pandoc man/eget.md -s -t man -o eget.1
 
@@ -38,4 +41,4 @@ clean:
 	rm -f eget eget.exe eget.1 eget-*.tar.gz eget-*.zip
 	rm -rf eget-*/
 
-.PHONY: build clean install package version fmt vet
+.PHONY: build clean install package version fmt vet test
