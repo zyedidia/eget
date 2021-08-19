@@ -215,8 +215,8 @@ type BinaryChooser struct {
 }
 
 func (b *BinaryChooser) Choose(name string, mode fs.FileMode) (bool, bool) {
-	fmatch := filepath.Base(name) == b.Tool
-	possible := !mode.IsDir() && isExecAny(mode.Perm())
+	fmatch := filepath.Base(name) == b.Tool || filepath.Base(name) == b.Tool+".exe"
+	possible := !mode.IsDir() && isExecAny(mode.Perm()) || strings.HasSuffix(name, ".exe")
 	return fmatch && possible, possible
 }
 
