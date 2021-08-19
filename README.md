@@ -67,13 +67,12 @@ Usage:
 
 Application Options:
   -t, --tag=           tagged release to use instead of latest
-      --to=            extract to directory
+      --to=            move to given location after extracting
   -s, --system=        target system to download for (use "all" for all choices)
   -f, --file=          file name to extract
   -q, --quiet          only print essential output
       --download-only  stop after downloading the asset (no extraction)
       --asset=         download a specific asset
-      --rename=        rename extracted file to given name
   -x                   force the extracted file to be executable
       --sha256         show the SHA-256 hash of the downloaded asset
   -v, --version        show version information
