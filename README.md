@@ -40,12 +40,22 @@ Before you can get anything, you have to get Eget.
 ### Quick-install script
 
 ```
+curl -o eget.sh https://zyedidia.github.io/eget.sh
+shasum -a 256 eget.sh # verify with hash below
+bash eget.sh
+```
+
+Or alternatively (less secure):
+
+```
 curl https://zyedidia.github.io/eget.sh | sh
 ```
 
 You can then place the downloaded binary in a location on your `$PATH` such as `/usr/local/bin`.
 
-If you would like to verify the script, the sha256 checksum is `0e64b8a3c13f531da005096cc364ac77835bda54276fedef6c62f3dbdc1ee919` (use `shasum -a 256 eget.sh` after downloading the script).
+To verify the script, the sha256 checksum is `0e64b8a3c13f531da005096cc364ac77835bda54276fedef6c62f3dbdc1ee919` (use `shasum -a 256 eget.sh` after downloading the script).
+
+One of the reasons to use eget is to avoid running curl into bash.
 
 ### Pre-built binaries
 
