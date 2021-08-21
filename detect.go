@@ -211,8 +211,12 @@ func (d *SystemDetector) Detect(assets []string) (string, []string, error) {
 		return matches[0], nil, nil
 	} else if len(matches) > 1 {
 		return "", matches, fmt.Errorf("%d matches found", len(matches))
-	} else if len(candidates) > 0 {
+	} else if len(candidates) == 1 {
+		return candidates[0], nil, nil
+	} else if len(candidates) > 1 {
 		return "", candidates, fmt.Errorf("%d candidates found (unsure architecture)", len(candidates))
+	} else if len(all) == 1 {
+		return all[0], nil, nil
 	}
 	return "", all, fmt.Errorf("no candidates found")
 }
