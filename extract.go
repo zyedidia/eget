@@ -25,9 +25,18 @@ type Extractor interface {
 // An ExtractedFile contains the data, name, and permissions of a file in the
 // archive.
 type ExtractedFile struct {
-	Name string
-	Mode fs.FileMode
-	Data []byte
+	Name        string // name to extract to
+	ArchiveName string // name in archive
+	mode        fs.FileMode
+	Data        []byte
+}
+
+// Mode returns the filemode of the extracted file.
+func (e ExtractedFile) Mode() fs.FileMode {
+	if isExec(e.Name, e.mode) {
+		return e.mode | 0x111
+	}
+	return e.mode
 }
 
 // A Chooser selects a file. It may list the file as a direct match (should be
@@ -42,7 +51,11 @@ type Chooser interface {
 // '.tar.bzip2', '.tar', '.zip'. After these matches, if the file ends with
 // '.gz', '.bzip2' it will be decompressed and copied. Other files will simply
 // be copied without any decompression or extraction.
-func NewExtractor(filename string, chooser Chooser) Extractor {
+func NewExtractor(filename string, tool string, chooser Chooser) Extractor {
+	if tool == "" {
+		tool = filename
+	}
+
 	gunzipper := func(r io.Reader) (io.Reader, error) {
 		return gzip.NewReader(r)
 	}
@@ -75,16 +88,19 @@ func NewExtractor(filename string, chooser Chooser) Extractor {
 		}
 	case strings.HasSuffix(filename, ".gz"):
 		return &SingleFileExtractor{
+			Rename:     tool,
 			Name:       filename,
 			Decompress: gunzipper,
 		}
 	case strings.HasSuffix(filename, ".bzip2"):
 		return &SingleFileExtractor{
+			Rename:     tool,
 			Name:       filename,
 			Decompress: b2unzipper,
 		}
 	default:
 		return &SingleFileExtractor{
+			Rename:     tool,
 			Name:       filename,
 			Decompress: nounzipper,
 		}
@@ -120,9 +136,10 @@ func (t *TarExtractor) Extract(data []byte) (ExtractedFile, []ExtractedFile, err
 			if direct || possible {
 				data, err := io.ReadAll(tr)
 				f := ExtractedFile{
-					Name: hdr.Name,
-					Mode: fs.FileMode(hdr.Mode),
-					Data: data,
+					Name:        hdr.Name,
+					ArchiveName: hdr.Name,
+					mode:        fs.FileMode(hdr.Mode),
+					Data:        data,
 				}
 				if direct {
 					return f, nil, err
@@ -165,9 +182,10 @@ func (z *ZipExtractor) Extract(data []byte) (ExtractedFile, []ExtractedFile, err
 			defer rc.Close()
 			data, err := io.ReadAll(rc)
 			f := ExtractedFile{
-				Name: f.Name,
-				Mode: f.Mode(),
-				Data: data,
+				Name:        f.Name,
+				ArchiveName: f.Name,
+				mode:        f.Mode(),
+				Data:        data,
 			}
 			if direct {
 				return f, nil, err
@@ -188,6 +206,7 @@ func (z *ZipExtractor) Extract(data []byte) (ExtractedFile, []ExtractedFile, err
 // SingleFileExtractor extracts files called 'Name' after decompressing the
 // file with 'Decompress'.
 type SingleFileExtractor struct {
+	Rename     string
 	Name       string
 	Decompress func(r io.Reader) (io.Reader, error)
 }
@@ -201,9 +220,10 @@ func (sf *SingleFileExtractor) Extract(data []byte) (ExtractedFile, []ExtractedF
 
 	decdata, err := io.ReadAll(dr)
 	return ExtractedFile{
-		Name: sf.Name,
-		Mode: 0666 | 0111, // executable
-		Data: decdata,
+		Name:        sf.Rename,
+		ArchiveName: sf.Name,
+		mode:        0666 | 0111, // executable
+		Data:        decdata,
 	}, nil, err
 }
 
@@ -215,8 +235,11 @@ type BinaryChooser struct {
 }
 
 func (b *BinaryChooser) Choose(name string, mode fs.FileMode) (bool, bool) {
-	fmatch := filepath.Base(name) == b.Tool || filepath.Base(name) == b.Tool+".exe"
-	possible := !mode.IsDir() && isExecAny(mode.Perm()) || strings.HasSuffix(name, ".exe")
+	fmatch := filepath.Base(name) == b.Tool ||
+		filepath.Base(name) == b.Tool+".exe" ||
+		filepath.Base(name) == b.Tool+".appimage"
+
+	possible := !mode.IsDir() && isExec(name, mode.Perm())
 	return fmatch && possible, possible
 }
 
@@ -224,8 +247,13 @@ func (b *BinaryChooser) String() string {
 	return fmt.Sprintf("exe `%s`", b.Tool)
 }
 
-func isExecAny(mode os.FileMode) bool {
-	return mode&0111 != 0
+func isExec(file string, mode os.FileMode) bool {
+	// file is executable if it is one of the following:
+	// *.exe, *.appimage, no extension, executable file permissions
+	return strings.HasSuffix(file, ".exe") ||
+		strings.HasSuffix(file, ".appimage") ||
+		!strings.Contains(file, ".") ||
+		mode&0111 != 0
 }
 
 // LiteralFileChooser selects files with the name 'File'.

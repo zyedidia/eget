@@ -207,11 +207,11 @@ func main() {
 			},
 		}
 	} else if opts.ExtractFile != "" {
-		extractor = NewExtractor(path.Base(url), &LiteralFileChooser{
+		extractor = NewExtractor(path.Base(url), tool, &LiteralFileChooser{
 			File: opts.ExtractFile,
 		})
 	} else {
-		extractor = NewExtractor(path.Base(url), &BinaryChooser{
+		extractor = NewExtractor(path.Base(url), tool, &BinaryChooser{
 			Tool: tool,
 		})
 	}
@@ -250,17 +250,18 @@ func main() {
 		out = opts.Output
 	}
 
+	mode := bin.Mode()
 	if opts.Exec {
-		bin.Mode |= 0111
+		mode |= 0111
 	}
 
 	// write the file using the same perms it had in the archive
-	f, err := os.OpenFile(out, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, bin.Mode)
+	f, err := os.OpenFile(out, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, mode)
 	if err != nil {
 		fatal(err)
 	}
 	f.Write(bin.Data)
 	f.Close()
 
-	fmt.Fprintf(output, "Extracted `%s` to `%s`\n", bin.Name, out)
+	fmt.Fprintf(output, "Extracted `%s` to `%s`\n", bin.ArchiveName, out)
 }
