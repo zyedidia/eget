@@ -17,9 +17,14 @@ needed for installation. For more complex installation, you may use the
 ![Eget Demo](https://github.com/zyedidia/blobs/blob/master/eget-demo.gif)
 
 For software maintainers, if you provide prebuilt binaries on GitHub, you can
-list `eget` as a one-line method for users to install your software. See the
-FAQ for instructions to make sure your software works with eget, and
-[DOCS.md](DOCS.md) for more in-depth documentation.
+list `eget` as a one-line method for users to install your software.
+
+Eget has a number of detection mechanisms and should work out-of-the-box with
+most software that is distributed via single binaries on GitHub releases. First
+try using Eget on your software, it may already just work. See Eget's pre-built
+binaries on the releases page for a good template.
+
+For more in-depth documentation, see [DOCS.md](DOCS.md).
 
 # Examples
 
@@ -118,15 +123,6 @@ Eget does not run any downloaded code -- it just finds executables from GitHub r
 ### Does this work only for GitHub repositories?
 
 At the moment Eget only supports searching GitHub releases and direct URLs. If you provide a direct URL instead of a GitHub repository, Eget will skip the detection phase and download directly from the given URL.
-
-### How can I make my software installable with Eget?
-
-Eget has a number of detection mechanisms and should work out-of-the-box with
-most software that is distributed via single binaries on GitHub releases. First
-try using eget on your software, it may already just work. See Eget's pre-built
-binaries on the releases for a good template.
-
-For concrete details about exactly how Eget works, see [DOCS.md](DOCS.md).
 
 # Contributing
 
