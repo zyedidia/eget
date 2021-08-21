@@ -69,26 +69,22 @@ func NewExtractor(filename string, tool string, chooser Chooser) Extractor {
 	switch {
 	case strings.HasSuffix(filename, ".tar.gz"):
 		return &TarExtractor{
-			Rename:     tool,
 			File:       chooser,
 			Decompress: gunzipper,
 		}
 	case strings.HasSuffix(filename, ".tar.bzip2"):
 		return &TarExtractor{
-			Rename:     tool,
 			File:       chooser,
 			Decompress: b2unzipper,
 		}
 	case strings.HasSuffix(filename, ".tar"):
 		return &TarExtractor{
-			Rename:     tool,
 			File:       chooser,
 			Decompress: nounzipper,
 		}
 	case strings.HasSuffix(filename, ".zip"):
 		return &ZipExtractor{
-			Rename: tool,
-			File:   chooser,
+			File: chooser,
 		}
 	case strings.HasSuffix(filename, ".gz"):
 		return &SingleFileExtractor{
@@ -114,7 +110,6 @@ func NewExtractor(filename string, tool string, chooser Chooser) Extractor {
 // TarExtractor extracts files matched by 'File' in a tar archive. It first
 // decompresses the archive using the 'Decompress. function.
 type TarExtractor struct {
-	Rename     string
 	File       Chooser
 	Decompress func(r io.Reader) (io.Reader, error)
 }
@@ -141,7 +136,7 @@ func (t *TarExtractor) Extract(data []byte) (ExtractedFile, []ExtractedFile, err
 			if direct || possible {
 				data, err := io.ReadAll(tr)
 				f := ExtractedFile{
-					Name:        rename(hdr.Name, t.Rename),
+					Name:        rename(hdr.Name, hdr.Name),
 					ArchiveName: hdr.Name,
 					mode:        fs.FileMode(hdr.Mode),
 					Data:        data,
@@ -165,8 +160,7 @@ func (t *TarExtractor) Extract(data []byte) (ExtractedFile, []ExtractedFile, err
 
 // A ZipExtractor extracts files chosen by 'File' from a zip archive.
 type ZipExtractor struct {
-	Rename string
-	File   Chooser
+	File Chooser
 }
 
 func (z *ZipExtractor) Extract(data []byte) (ExtractedFile, []ExtractedFile, error) {
@@ -188,7 +182,7 @@ func (z *ZipExtractor) Extract(data []byte) (ExtractedFile, []ExtractedFile, err
 			defer rc.Close()
 			data, err := io.ReadAll(rc)
 			f := ExtractedFile{
-				Name:        rename(f.Name, z.Rename),
+				Name:        rename(f.Name, f.Name),
 				ArchiveName: f.Name,
 				mode:        f.Mode(),
 				Data:        data,

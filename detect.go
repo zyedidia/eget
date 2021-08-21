@@ -25,7 +25,10 @@ type OS struct {
 // Match returns true if the given archive name is likely to store a binary for
 // this OS. Also returns if this is a priority match.
 func (os *OS) Match(s string) (bool, bool) {
-	return os.regex.MatchString(s), os.priority.MatchString(s)
+	if os.priority != nil {
+		return os.regex.MatchString(s), os.priority.MatchString(s)
+	}
+	return os.regex.MatchString(s), false
 }
 
 var (
@@ -35,7 +38,7 @@ var (
 	}
 	OSWindows = OS{
 		name:  "windows",
-		regex: regexp.MustCompile(`(?i)(win|windows)`),
+		regex: regexp.MustCompile(`(?i)([^r]win|windows)`),
 	}
 	OSLinux = OS{
 		name:     "linux",

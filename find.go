@@ -51,7 +51,7 @@ type GithubAssetFinder struct {
 func (f *GithubAssetFinder) Find() ([]string, error) {
 	// query github's API for this repo/tag pair.
 	url := fmt.Sprintf("https://api.github.com/repos/%s/releases/%s", f.Repo, f.Tag)
-	resp, err := http.Get(url)
+	resp, err := Get(url)
 	if err != nil {
 		return nil, err
 	}
