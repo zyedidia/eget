@@ -17,14 +17,15 @@ type Detector interface {
 
 // An OS represents a target operating system.
 type OS struct {
-	name  string
-	regex *regexp.Regexp
+	name     string
+	regex    *regexp.Regexp
+	priority *regexp.Regexp // matches to priority are better than normal matches
 }
 
 // Match returns true if the given archive name is likely to store a binary for
-// this OS.
-func (os *OS) Match(s string) bool {
-	return os.regex.MatchString(s)
+// this OS. Also returns if this is a priority match.
+func (os *OS) Match(s string) (bool, bool) {
+	return os.regex.MatchString(s), os.priority.MatchString(s)
 }
 
 var (
@@ -37,8 +38,9 @@ var (
 		regex: regexp.MustCompile(`(?i)(win|windows)`),
 	}
 	OSLinux = OS{
-		name:  "linux",
-		regex: regexp.MustCompile(`(?i)(linux)`),
+		name:     "linux",
+		regex:    regexp.MustCompile(`(?i)(linux)`),
+		priority: regexp.MustCompile(`\.appimage$`),
 	}
 	OSNetBSD = OS{
 		name:  "netbsd",
@@ -193,11 +195,15 @@ func NewSystemDetector(sos, sarch string) (*SystemDetector, error) {
 // matches are returned as candidates. Otherwise all assets are returned as
 // candidates.
 func (d *SystemDetector) Detect(assets []string) (string, []string, error) {
+	var priority []string
 	var matches []string
 	var candidates []string
 	all := make([]string, 0, len(assets))
 	for _, a := range assets {
-		os := d.Os.Match(a)
+		os, extra := d.Os.Match(a)
+		if extra {
+			priority = append(priority, a)
+		}
 		arch := d.Arch.Match(a)
 		if os && arch {
 			matches = append(matches, a)
@@ -207,7 +213,11 @@ func (d *SystemDetector) Detect(assets []string) (string, []string, error) {
 		}
 		all = append(all, a)
 	}
-	if len(matches) == 1 {
+	if len(priority) == 1 {
+		return priority[0], nil, nil
+	} else if len(priority) > 1 {
+		return "", priority, fmt.Errorf("%d priority matches found", len(matches))
+	} else if len(matches) == 1 {
 		return matches[0], nil, nil
 	} else if len(matches) > 1 {
 		return "", matches, fmt.Errorf("%d matches found", len(matches))

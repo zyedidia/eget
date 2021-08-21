@@ -34,7 +34,7 @@ type ExtractedFile struct {
 // Mode returns the filemode of the extracted file.
 func (e ExtractedFile) Mode() fs.FileMode {
 	if isExec(e.Name, e.mode) {
-		return e.mode | 0x111
+		return e.mode | 0111
 	}
 	return e.mode
 }
@@ -69,22 +69,26 @@ func NewExtractor(filename string, tool string, chooser Chooser) Extractor {
 	switch {
 	case strings.HasSuffix(filename, ".tar.gz"):
 		return &TarExtractor{
+			Rename:     tool,
 			File:       chooser,
 			Decompress: gunzipper,
 		}
 	case strings.HasSuffix(filename, ".tar.bzip2"):
 		return &TarExtractor{
+			Rename:     tool,
 			File:       chooser,
 			Decompress: b2unzipper,
 		}
 	case strings.HasSuffix(filename, ".tar"):
 		return &TarExtractor{
+			Rename:     tool,
 			File:       chooser,
 			Decompress: nounzipper,
 		}
 	case strings.HasSuffix(filename, ".zip"):
 		return &ZipExtractor{
-			File: chooser,
+			Rename: tool,
+			File:   chooser,
 		}
 	case strings.HasSuffix(filename, ".gz"):
 		return &SingleFileExtractor{
@@ -110,6 +114,7 @@ func NewExtractor(filename string, tool string, chooser Chooser) Extractor {
 // TarExtractor extracts files matched by 'File' in a tar archive. It first
 // decompresses the archive using the 'Decompress. function.
 type TarExtractor struct {
+	Rename     string
 	File       Chooser
 	Decompress func(r io.Reader) (io.Reader, error)
 }
@@ -136,7 +141,7 @@ func (t *TarExtractor) Extract(data []byte) (ExtractedFile, []ExtractedFile, err
 			if direct || possible {
 				data, err := io.ReadAll(tr)
 				f := ExtractedFile{
-					Name:        hdr.Name,
+					Name:        rename(hdr.Name, t.Rename),
 					ArchiveName: hdr.Name,
 					mode:        fs.FileMode(hdr.Mode),
 					Data:        data,
@@ -160,7 +165,8 @@ func (t *TarExtractor) Extract(data []byte) (ExtractedFile, []ExtractedFile, err
 
 // A ZipExtractor extracts files chosen by 'File' from a zip archive.
 type ZipExtractor struct {
-	File Chooser
+	Rename string
+	File   Chooser
 }
 
 func (z *ZipExtractor) Extract(data []byte) (ExtractedFile, []ExtractedFile, error) {
@@ -182,7 +188,7 @@ func (z *ZipExtractor) Extract(data []byte) (ExtractedFile, []ExtractedFile, err
 			defer rc.Close()
 			data, err := io.ReadAll(rc)
 			f := ExtractedFile{
-				Name:        f.Name,
+				Name:        rename(f.Name, z.Rename),
 				ArchiveName: f.Name,
 				mode:        f.Mode(),
 				Data:        data,
@@ -220,11 +226,27 @@ func (sf *SingleFileExtractor) Extract(data []byte) (ExtractedFile, []ExtractedF
 
 	decdata, err := io.ReadAll(dr)
 	return ExtractedFile{
-		Name:        sf.Rename,
+		Name:        rename(sf.Name, sf.Rename),
 		ArchiveName: sf.Name,
-		mode:        0666 | 0111, // executable
+		mode:        0666,
 		Data:        decdata,
 	}, nil, err
+}
+
+// attempt to rename 'file' to an appropriate executable name
+func rename(file string, nameguess string) string {
+	var rename string
+	if strings.HasSuffix(file, ".appimage") {
+		// remove the .appimage extension
+		rename = file[:len(file)-len(".appimage")]
+	} else if strings.HasSuffix(file, ".exe") {
+		// directly use xxx.exe
+		rename = file
+	} else {
+		// otherwise use the rename guess
+		rename = nameguess
+	}
+	return rename
 }
 
 // A BinaryChooser selects executable files. If the executable file has the

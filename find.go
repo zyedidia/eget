@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 )
@@ -17,6 +18,27 @@ type GithubRelease struct {
 	Assets []struct {
 		DownloadURL string `json:"browser_download_url"`
 	} `json:"assets"`
+}
+
+type GithubError struct {
+	Code   int
+	Status string
+	Body   []byte
+	Url    string
+}
+type errResponse struct {
+	Message string `json:"message"`
+	Doc     string `json:"documentation_url"`
+}
+
+func (ge *GithubError) Error() string {
+	var msg errResponse
+	json.Unmarshal(ge.Body, &msg)
+
+	if ge.Code == http.StatusForbidden {
+		return fmt.Sprintf("%s: %s: %s", ge.Status, msg.Message, msg.Doc)
+	}
+	return fmt.Sprintf("%s (URL: %s)", ge.Status, ge.Url)
 }
 
 // A GithubAssetFinder finds assets for the given Repo at the given tag. Tags
@@ -37,7 +59,16 @@ func (f *GithubAssetFinder) Find() ([]string, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("%s (URL: %s)", resp.Status, url)
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		return nil, &GithubError{
+			Status: resp.Status,
+			Code:   resp.StatusCode,
+			Body:   body,
+			Url:    url,
+		}
 	}
 
 	// read and unmarshal the resulting json
