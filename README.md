@@ -70,11 +70,13 @@ Pre-built binaries are available on the [releases](https://github.com/zyedidia/e
 
 ### From source
 
+Install the latest released version:
+
 ```
-go install github.com/zyedidia/eget@latest # install latest tagged version
+go install github.com/zyedidia/eget@latest
 ```
 
-or
+or install from HEAD:
 
 ```
 git clone https://github.com/zyedidia/eget
