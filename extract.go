@@ -202,7 +202,7 @@ func (sf *SingleFileExtractor) Extract(data []byte) (ExtractedFile, []ExtractedF
 	decdata, err := io.ReadAll(dr)
 	return ExtractedFile{
 		Name: sf.Name,
-		Mode: 0666,
+		Mode: 0666 | 0111, // executable
 		Data: decdata,
 	}, nil, err
 }
