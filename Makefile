@@ -19,7 +19,7 @@ eget:
 	go build -trimpath -ldflags "-s -w $(GOVARS)" .
 
 test: eget
-	cd test; EGET_BIN=../eget go run test_eget.go
+	cd test; TEST_EGET=../eget go run test_eget.go
 
 eget.1: man/eget.md
 	pandoc man/eget.md -s -t man -o eget.1

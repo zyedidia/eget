@@ -11,7 +11,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 )
 
@@ -37,6 +36,11 @@ func (e ExtractedFile) Mode() fs.FileMode {
 		return e.mode | 0111
 	}
 	return e.mode
+}
+
+// String returns the archive name of this extracted file
+func (e ExtractedFile) String() string {
+	return e.ArchiveName
 }
 
 // A Chooser selects a file. It may list the file as a direct match (should be
@@ -283,17 +287,4 @@ func (lf *LiteralFileChooser) Choose(name string, mode fs.FileMode) (bool, bool)
 
 func (lf *LiteralFileChooser) String() string {
 	return fmt.Sprintf("`%s`", lf.File)
-}
-
-// FileChooser selects files that match the regular expression 'File'.
-type FileChooser struct {
-	File *regexp.Regexp
-}
-
-func (f *FileChooser) Choose(name string, mode fs.FileMode) (bool, bool) {
-	return false, f.File.MatchString(name)
-}
-
-func (f *FileChooser) String() string {
-	return fmt.Sprintf("/%s/", f.File)
 }

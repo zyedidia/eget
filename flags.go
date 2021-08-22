@@ -1,6 +1,6 @@
 package main
 
-var opts struct {
+type Flags struct {
 	Tag         string `short:"t" long:"tag" description:"tagged release to use instead of latest"`
 	Output      string `long:"to" description:"move to given location after extracting"`
 	System      string `short:"s" long:"system" description:"target system to download for (use \"all\" for all choices)"`

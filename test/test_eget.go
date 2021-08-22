@@ -27,7 +27,7 @@ func must(err error) {
 }
 
 func main() {
-	eget := os.Getenv("EGET_BIN")
+	eget := os.Getenv("TEST_EGET")
 
 	must(run(eget, "--system", "linux/amd64", "jgm/pandoc"))
 	must(fileExists("pandoc"))

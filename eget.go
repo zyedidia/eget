@@ -37,7 +37,123 @@ func IsDirectory(path string) bool {
 	return fileInfo.IsDir()
 }
 
+// Determine the appropriate Finder to use. If opts.URL is provided, we use
+// a DirectAssetFinder. Otherwise we use a GithubAssetFinder. When a Github
+// repo is provided, we assume the repo name is the 'tool' name (for direct
+// URLs, the tool name is unknown and remains empty).
+func getFinder(project string, opts *Flags) (finder Finder, tool string) {
+	if IsUrl(project) {
+		finder = &DirectAssetFinder{
+			URL: project,
+		}
+		opts.System = "all"
+	} else {
+		repo := project
+		if strings.Count(repo, "/") != 1 {
+			fatal("invalid argument (must be of the form `user/repo`)")
+		}
+		parts := strings.Split(repo, "/")
+		if parts[0] == "" || parts[1] == "" {
+			fatal("invalid argument (must be of the form `user/repo`)")
+		}
+		tool = parts[1]
+
+		tag := "latest"
+		if opts.Tag != "" {
+			tag = fmt.Sprintf("tags/%s", opts.Tag)
+		}
+
+		finder = &GithubAssetFinder{
+			Repo: repo,
+			Tag:  tag,
+		}
+	}
+	return finder, tool
+}
+
+// Determine the appropriate detector. If the --system is 'all', we use an
+// AllDetector, which will just return all assets. Otherwise we use the
+// --system pair provided by the user, or the runtime.GOOS/runtime.GOARCH
+// pair by default (the host system OS/Arch pair).
+func getDetector(opts *Flags) (detector Detector, err error) {
+	if opts.Asset != "" {
+		detector = &SingleAssetDetector{
+			Asset: opts.Asset,
+		}
+	} else if opts.System == "all" {
+		detector = &AllDetector{}
+	} else if opts.System != "" {
+		split := strings.Split(opts.System, "/")
+		if len(split) < 2 {
+			fatal("system descriptor must be os/arch")
+		}
+		detector, err = NewSystemDetector(split[0], split[1])
+	} else {
+		detector, err = NewSystemDetector(runtime.GOOS, runtime.GOARCH)
+	}
+	return detector, err
+}
+
+// Determine which extractor to use. If --download-only is provided, we
+// just "extract" the downloaded archive to itself. Otherwise we try to
+// extract the literal file provided by --file, or by default we just
+// extract a binary with the tool name that was possibly auto-detected
+// above.
+func getExtractor(url, tool string, opts *Flags) (extractor Extractor) {
+	if opts.DLOnly {
+		extractor = &SingleFileExtractor{
+			Name: path.Base(url),
+			Decompress: func(r io.Reader) (io.Reader, error) {
+				return r, nil
+			},
+		}
+	} else if opts.ExtractFile != "" {
+		extractor = NewExtractor(path.Base(url), tool, &LiteralFileChooser{
+			File: opts.ExtractFile,
+		})
+	} else {
+		extractor = NewExtractor(path.Base(url), tool, &BinaryChooser{
+			Tool: tool,
+		})
+	}
+	return extractor
+}
+
+// Write an extracted file to disk with a new name.
+func writeFile(ef ExtractedFile, rename string) error {
+	f, err := os.OpenFile(rename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, ef.Mode())
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	_, err = f.Write(ef.Data)
+	return err
+}
+
+// Would really like generics to implement this...
+// Make the user select one of the choices and return the index of the
+// selection.
+func userSelect(choices []interface{}) int {
+	for i, c := range choices {
+		fmt.Printf("(%d) %v\n", i+1, c)
+	}
+	var choice int
+	for {
+		fmt.Print("Enter selection number: ")
+		_, err := fmt.Scanf("%d", &choice)
+		if err == nil && (choice <= 0 || choice > len(choices)) {
+			err = fmt.Errorf("%d is out of bounds", choice)
+		}
+		if err == nil {
+			break
+		}
+		fmt.Printf("Invalid selection: %v\n", err)
+	}
+	return choice
+}
+
 func main() {
+	var opts Flags
 	flagparser := flags.NewParser(&opts, flags.PassDoubleDash|flags.PrintErrors)
 	flagparser.Usage = "[OPTIONS] PROJECT"
 	args, err := flagparser.Parse()
@@ -61,68 +177,19 @@ func main() {
 		os.Exit(0)
 	}
 
+	// when --quiet is passed, send non-essential output to io.Discard
 	var output io.Writer = os.Stdout
 	if opts.Quiet {
 		output = io.Discard
 	}
 
-	// Determine the appropriate Finder to use. If opts.URL is provided, we use
-	// a DirectAssetFinder. Otherwise we use a GithubAssetFinder. When a Github
-	// repo is provided, we assume the repo name is the 'tool' name (for direct
-	// URLs, the tool name is unknown and remains empty).
-	var finder Finder
-	var tool string
-	if IsUrl(args[0]) {
-		finder = &DirectAssetFinder{
-			URL: args[0],
-		}
-		opts.System = "all"
-	} else {
-		repo := args[0]
-		if strings.Count(repo, "/") != 1 {
-			fatal("invalid argument (must be of the form `user/repo`)")
-		}
-		parts := strings.Split(repo, "/")
-		if parts[0] == "" || parts[1] == "" {
-			fatal("invalid argument (must be of the form `user/repo`)")
-		}
-		tool = parts[1]
-
-		tag := "latest"
-		if opts.Tag != "" {
-			tag = fmt.Sprintf("tags/%s", opts.Tag)
-		}
-
-		finder = &GithubAssetFinder{
-			Repo: repo,
-			Tag:  tag,
-		}
-	}
+	finder, tool := getFinder(args[0], &opts)
 	assets, err := finder.Find()
 	if err != nil {
 		fatal(err)
 	}
 
-	// Determine the appropriate detector. If the --system is 'all', we use an
-	// AllDetector, which will just return all assets. Otherwise we use the
-	// --system pair provided by the user, or the runtime.GOOS/runtime.GOARCH
-	// pair by default (the host system OS/Arch pair).
-	var detector Detector
-	if opts.Asset != "" {
-		detector = &SingleAssetDetector{
-			Asset: opts.Asset,
-		}
-	} else if opts.System == "all" {
-		detector = &AllDetector{}
-	} else if opts.System != "" {
-		split := strings.Split(opts.System, "/")
-		if len(split) < 2 {
-			fatal("system descriptor must be os/arch")
-		}
-		detector, err = NewSystemDetector(split[0], split[1])
-	} else {
-		detector, err = NewSystemDetector(runtime.GOOS, runtime.GOARCH)
-	}
+	detector, err := getDetector(&opts)
 	if err != nil {
 		fatal(err)
 	}
@@ -132,21 +199,11 @@ func main() {
 	if len(candidates) != 0 && err != nil {
 		// if multiple candidates are returned, the user must select manually which one to download
 		fmt.Printf("%v: please select manually\n", err)
-		for i, c := range candidates {
-			fmt.Printf("(%d) %s\n", i+1, path.Base(c))
+		choices := make([]interface{}, len(candidates))
+		for i := range candidates {
+			choices[i] = path.Base(candidates[i])
 		}
-		var choice int
-		for {
-			fmt.Print("Enter selection number: ")
-			_, err := fmt.Scanf("%d", &choice)
-			if err == nil && (choice <= 0 || choice > len(candidates)) {
-				err = fmt.Errorf("%d is out of bounds", choice)
-			}
-			if err == nil {
-				break
-			}
-			fmt.Printf("Invalid selection: %v\n", err)
-		}
+		choice := userSelect(choices)
 		url = candidates[choice-1]
 	} else if err != nil {
 		fatal(err)
@@ -193,49 +250,18 @@ func main() {
 		fmt.Printf("%x\n", sum)
 	}
 
-	// Determine which extractor to use. If --download-only is provided, we
-	// just "extract" the downloaded archive to itself. Otherwise we try to
-	// extract the literal file provided by --file, or by default we just
-	// extract a binary with the tool name that was possibly auto-detected
-	// above.
-	var extractor Extractor
-	if opts.DLOnly {
-		extractor = &SingleFileExtractor{
-			Name: path.Base(url),
-			Decompress: func(r io.Reader) (io.Reader, error) {
-				return r, nil
-			},
-		}
-	} else if opts.ExtractFile != "" {
-		extractor = NewExtractor(path.Base(url), tool, &LiteralFileChooser{
-			File: opts.ExtractFile,
-		})
-	} else {
-		extractor = NewExtractor(path.Base(url), tool, &BinaryChooser{
-			Tool: tool,
-		})
-	}
+	extractor := getExtractor(url, tool, &opts)
 
 	// extract the binary information
 	bin, bins, err := extractor.Extract(body)
 	if len(bins) != 0 && err != nil {
 		// if there are multiple candidates, have the user select manually
 		fmt.Printf("%v: please select manually\n", err)
-		for i, c := range bins {
-			fmt.Printf("(%d) %s\n", i+1, c.Name)
+		choices := make([]interface{}, len(bins))
+		for i := range bins {
+			choices[i] = bins[i]
 		}
-		var choice int
-		for {
-			fmt.Print("Enter selection number: ")
-			_, err := fmt.Scanf("%d", &choice)
-			if err == nil && (choice <= 0 || choice > len(bins)) {
-				err = fmt.Errorf("%d is out of bounds", choice)
-			}
-			if err == nil {
-				break
-			}
-			fmt.Printf("Invalid selection: %v\n", err)
-		}
+		choice := userSelect(choices)
 		bin = bins[choice-1]
 	} else if err != nil {
 		fatal(err)
@@ -264,13 +290,10 @@ func main() {
 		}
 	}
 
-	// write the file using the same perms it had in the archive
-	f, err := os.OpenFile(out, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, mode)
+	err = writeFile(bin, out)
 	if err != nil {
 		fatal(err)
 	}
-	f.Write(bin.Data)
-	f.Close()
 
 	fmt.Fprintf(output, "Extracted `%s` to `%s`\n", bin.ArchiveName, out)
 }
