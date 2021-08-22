@@ -35,7 +35,7 @@ func main() {
 	must(run(eget, "zyedidia/micro", "--tag", "nightly", "--asset", "osx"))
 	must(fileExists("micro"))
 
-	must(run(eget, "-x", "--asset", "nvim.appimage", "--to", "nvim", "neovim/neovim"))
+	must(run(eget, "--asset", "nvim.appimage", "--to", "nvim", "neovim/neovim"))
 	must(fileExists("nvim"))
 
 	must(run(eget, "--system", "darwin/amd64", "sharkdp/fd"))
