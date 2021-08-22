@@ -241,18 +241,27 @@ func main() {
 		fatal(err)
 	}
 
+	mode := bin.Mode()
+	if opts.Exec {
+		mode |= 0111
+	}
+
 	// write the extracted file to a file on disk, in the --to directory if
 	// requested
 	out := filepath.Base(bin.Name)
 	if opts.Output != "" && IsDirectory(opts.Output) {
 		out = filepath.Join(opts.Output, out)
-	} else if opts.Output != "" {
-		out = opts.Output
-	}
-
-	mode := bin.Mode()
-	if opts.Exec {
-		mode |= 0111
+	} else {
+		if opts.Output != "" {
+			out = opts.Output
+		}
+		// only use $EGET_BIN if
+		// 1. $EGET_BIN is non-empty
+		// 2. --to is not a path (not a path if no path separator is found)
+		// 3. The extracted file is executable
+		if os.Getenv("EGET_BIN") != "" && !strings.ContainsRune(out, os.PathSeparator) && mode&0111 != 0 {
+			out = filepath.Join(os.Getenv("EGET_BIN"), out)
+		}
 	}
 
 	// write the file using the same perms it had in the archive
