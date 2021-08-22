@@ -268,9 +268,6 @@ func main() {
 	}
 
 	mode := bin.Mode()
-	if opts.Exec {
-		mode |= 0111
-	}
 
 	// write the extracted file to a file on disk, in the --to directory if
 	// requested

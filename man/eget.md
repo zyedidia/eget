@@ -57,10 +57,6 @@ header: Eget Manual
 
 :    Download a specific asset containing the given string. If there is an exact match with an asset, that asset is used regardless. Example: **`eget --asset nvim.appimage neovim/neovim`**.
 
-  `-x`
-
-:    Force the extracted file to be executable. Example: **`eget -x --asset nvim.appimage neovim/neovim`**.
-
   `--sha256`
 
 :    Show the SHA-256 hash of the downloaded asset. This can be used to verify that the asset is not corrupted.
