@@ -203,6 +203,11 @@ func (d *SystemDetector) Detect(assets []string) (string, []string, error) {
 	var candidates []string
 	all := make([]string, 0, len(assets))
 	for _, a := range assets {
+		if strings.HasSuffix(a, ".sha256") || strings.HasSuffix(a, ".sha256sum") {
+			// skip checksums (they will be checked later by the verifier)
+			continue
+		}
+
 		os, extra := d.Os.Match(a)
 		if extra {
 			priority = append(priority, a)

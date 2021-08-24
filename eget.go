@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"crypto/sha256"
 	"fmt"
 	"io"
 	"net/url"
@@ -37,6 +36,17 @@ func IsDirectory(path string) bool {
 	return fileInfo.IsDir()
 }
 
+// searches for an asset thaat has the same name as the requested one but
+// ending with .sha256 or .sha256sum
+func checksumAsset(asset string, assets []string) string {
+	for _, a := range assets {
+		if a == asset+".sha256sum" || a == asset+".sha256" {
+			return a
+		}
+	}
+	return ""
+}
+
 // Determine the appropriate Finder to use. If opts.URL is provided, we use
 // a DirectAssetFinder. Otherwise we use a GithubAssetFinder. When a Github
 // repo is provided, we assume the repo name is the 'tool' name (for direct
@@ -69,6 +79,21 @@ func getFinder(project string, opts *Flags) (finder Finder, tool string) {
 		}
 	}
 	return finder, tool
+}
+
+func getVerifier(sumAsset string, opts *Flags) (verifier Verifier, err error) {
+	if opts.Verify != "" {
+		verifier, err = NewSha256Verifier(opts.Verify)
+	} else if sumAsset != "" {
+		verifier = &Sha256AssetVerifier{
+			AssetURL: sumAsset,
+		}
+	} else if opts.Hash {
+		verifier = &Sha256Printer{}
+	} else {
+		verifier = &NoVerifier{}
+	}
+	return verifier, err
 }
 
 // Determine the appropriate detector. If the --system is 'all', we use an
@@ -245,9 +270,18 @@ func main() {
 
 	body := buf.Bytes()
 
-	if opts.Hash {
-		sum := sha256.Sum256(body)
-		fmt.Printf("%x\n", sum)
+	sumAsset := checksumAsset(url, assets)
+	verifier, err := getVerifier(sumAsset, &opts)
+	if err != nil {
+		fatal(err)
+	}
+	err = verifier.Verify(body)
+	if err != nil {
+		fatal(err)
+	} else if opts.Verify == "" && sumAsset != "" {
+		fmt.Fprintf(output, "Checksum verified with %s\n", path.Base(sumAsset))
+	} else if opts.Verify != "" {
+		fmt.Fprintf(output, "Checksum verified\n")
 	}
 
 	extractor := getExtractor(url, tool, &opts)

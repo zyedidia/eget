@@ -9,6 +9,7 @@ type Flags struct {
 	DLOnly      bool   `long:"download-only" description:"stop after downloading the asset (no extraction)"`
 	Asset       string `long:"asset" description:"download a specific asset containing the given string"`
 	Hash        bool   `long:"sha256" description:"show the SHA-256 hash of the downloaded asset"`
+	Verify      string `long:"verify-sha256" description:"verify the downloaded asset checksum against the one provided"`
 	Version     bool   `short:"v" long:"version" description:"show version information"`
 	Help        bool   `short:"h" long:"help" description:"show this help message"`
 }
