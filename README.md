@@ -32,7 +32,7 @@ For more in-depth documentation, see [DOCS.md](DOCS.md).
 eget zyedidia/micro --tag nightly
 eget jgm/pandoc --to /usr/local/bin
 eget junegunn/fzf
-eget -x --asset nvim.appimage --to nvim neovim/neovim
+eget neovim/neovim
 eget ogham/exa
 eget --system darwin/amd64 sharkdp/fd
 eget BurntSushi/ripgrep
@@ -42,7 +42,7 @@ eget zachjs/sv2v
 
 # How to get Eget
 
-Before you can get anything, you have to get Eget.
+Before you can get anything, you have to get Eget. If you already have Eget and want to upgrade, use `eget zyedidia/eget`.
 
 ### Quick-install script
 
@@ -106,8 +106,8 @@ Application Options:
   -q, --quiet          only print essential output
       --download-only  stop after downloading the asset (no extraction)
       --asset=         download a specific asset containing the given string
-  -x                   force the extracted file to be executable
       --sha256         show the SHA-256 hash of the downloaded asset
+      --verify-sha256= verify the downloaded asset checksum against the one provided
   -v, --version        show version information
   -h, --help           show this help message
 ```
@@ -120,7 +120,7 @@ Eget only downloads pre-built binaries uploaded to GitHub by the developers of t
 
 ### Is this secure?
 
-Eget does not run any downloaded code -- it just finds executables from GitHub releases and downloads/extracts them. If you trust the code you are downloading (i.e. if you trust downloading pre-built binaries from GitHub) then using Eget is perfectly safe. You can use the `--sha256` option to have Eget print the SHA-256 checksum of the downloaded file, and then you can check if this matches the checksum provided by the developers of the tool you downloaded (if they provide one).
+Eget does not run any downloaded code -- it just finds executables from GitHub releases and downloads/extracts them. If you trust the code you are downloading (i.e. if you trust downloading pre-built binaries from GitHub) then using Eget is perfectly safe. If Eget finds a matching asset ending in `.sha256` or `.sha256sum`, the SHA-256 checksum of your download will be automatically verified. You can also use the `--sha256` or `--verify-sha256` options to manually verify the SHA-256 checksums of your downloads (checksums are provided in an alternative manner by your download source).
 
 ### Does this work only for GitHub repositories?
 

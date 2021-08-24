@@ -25,6 +25,11 @@ header: Eget Manual
   release assets, or a direct URL, in which case Eget will directly download
   and extract from the given URL.
 
+  If Eget downloads an asset called `xxx` and there also exists an asset called
+  `xxx.sha256` or `xxx.sha256sum`, Eget will automatically verify that the
+  SHA-256 checksum of the downloaded asset matches the one contained in that
+  file, and abort installation if a mismatch occurs.
+
   The behavior of Eget is configurable in a number of ways via options.
   Documentation for these options is provided below.
 
@@ -60,6 +65,10 @@ header: Eget Manual
   `--sha256`
 
 :    Show the SHA-256 hash of the downloaded asset. This can be used to verify that the asset is not corrupted.
+
+  `--verify-sha256=`
+
+:    Verify the SHA-256 hash of the downloaded asset against the one provided as an argument. Similar to `--sha256`, but Eget will do the verification for you.
 
   `-v, --version`
 
