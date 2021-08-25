@@ -21,8 +21,8 @@ list `eget` as a one-line method for users to install your software.
 
 Eget has a number of detection mechanisms and should work out-of-the-box with
 most software that is distributed via single binaries on GitHub releases. First
-try using Eget on your software, it may already just work. See Eget's pre-built
-binaries on the releases page for a good template.
+try using Eget on your software, it may already just work. Otherwise, see the
+FAQ a clear set of rules to make your software compatible with Eget.
 
 For more in-depth documentation, see [DOCS.md](DOCS.md).
 
@@ -135,6 +135,22 @@ Eget does not run any downloaded code -- it just finds executables from GitHub r
 ### Does this work only for GitHub repositories?
 
 At the moment Eget only supports searching GitHub releases and direct URLs. If you provide a direct URL instead of a GitHub repository, Eget will skip the detection phase and download directly from the given URL.
+
+### How can I make my software compatible with Eget?
+
+Eget should work out-of-the-box with many methods for releasing software, and does not require that you build your release process for Eget in particular. However, here are some rules that will guarantee compatibility with Eget.
+
+* Provide your pre-built binaries as GitHub release assets.
+* Format the system name as `OS_Arch` and include it in every pre-built binary
+  name. Supported OSes are `darwin`/`macos`, `windows`, `linux`, `netbsd`, `openbsd`,
+  `freebsd`, `android`, `illumos`, `solaris`, `plan9`. Supported architectures
+  are `amd64`, `i386`, `arm`, `arm64`, `riscv64`.
+* If desired, include `*.sha256` files for each asset, containing the SHA-256
+  checksum of each asset. These checksums will be automatically verified by
+  Eget.
+* Include only a single executable or appimage per system in each release archive.
+* Use `.tar.gz`, `.tar.bz2`, `.tar`, or `.zip` for archives. You may also directly upload
+  the executable without an archive, or a compressed executable ending in `.gz` or `.bz2`.
 
 # Contributing
 

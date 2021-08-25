@@ -1,9 +1,10 @@
 # Eget Documentation
 
-Eget works in three phases:
+Eget works in four phases:
 
 * Find: determine a list of assets that may be installed.
 * Detect: determine which asset in the list should be downloaded for the target system.
+* Verify: verify the checksum of the asset if possible.
 * Extract: determine which file within the asset to extract.
 
 If you are interested in reading the source code, there is one file for each
@@ -51,6 +52,16 @@ Using the direct OS/Architecture (left column of the above tables) name in your
 prebuilt zip file names will always allow Eget to auto-detect correctly,
 although Eget will often auto-detect correctly for other names as well.
 
+## Verify
+
+During verification, Eget will attempt to verify the checksum of the downloaded
+asset. If the user has provided a checksum, or asked Eget to simply print the
+checksum, it will do so. Otherwise it may do auto-detection. If it is
+downloading an asset called `xxx`, and there is another asset called
+`xxx.sha256` or `xxx.sha256sum`, Eget will automatically verify the SHA-256
+checksum of the downloaded asset against the one contained in the
+`.sha256`/`.sha256sum` file.
+
 ## Extract
 
 During extraction, Eget will detect the type of archive and compression, and
@@ -64,11 +75,11 @@ of permissions within the archive.
 Eget supports the following filetypes for assets:
 
 * `.tar.gz`: tar archive with gzip compression.
-* `.tar.bzip2`: tar archive with bzip2 compression.
+* `.tar.bz2`: tar archive with bzip2 compression.
 * `.tar`: tar archive with no compression.
 * `.zip`: zip archive.
 * `.gz`: single file with gzip compression.
-* `.bzip2`: single file with bzip2 compression.
+* `.bz2`: single file with bzip2 compression.
 * otherwise: single file.
 
 If a single file is "extracted" (no tar or zip archive), it will be marked

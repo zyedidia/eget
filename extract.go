@@ -52,8 +52,8 @@ type Chooser interface {
 
 // NewExtractor constructs an extractor for the given archive file using the
 // given chooser. It will construct extractors for files ending in '.tar.gz',
-// '.tar.bzip2', '.tar', '.zip'. After these matches, if the file ends with
-// '.gz', '.bzip2' it will be decompressed and copied. Other files will simply
+// '.tar.bz2', '.tar', '.zip'. After these matches, if the file ends with
+// '.gz', '.bz2' it will be decompressed and copied. Other files will simply
 // be copied without any decompression or extraction.
 func NewExtractor(filename string, tool string, chooser Chooser) Extractor {
 	if tool == "" {
@@ -76,7 +76,7 @@ func NewExtractor(filename string, tool string, chooser Chooser) Extractor {
 			File:       chooser,
 			Decompress: gunzipper,
 		}
-	case strings.HasSuffix(filename, ".tar.bzip2"):
+	case strings.HasSuffix(filename, ".tar.bz2"):
 		return &TarExtractor{
 			File:       chooser,
 			Decompress: b2unzipper,
@@ -96,7 +96,7 @@ func NewExtractor(filename string, tool string, chooser Chooser) Extractor {
 			Name:       filename,
 			Decompress: gunzipper,
 		}
-	case strings.HasSuffix(filename, ".bzip2"):
+	case strings.HasSuffix(filename, ".bz2"):
 		return &SingleFileExtractor{
 			Rename:     tool,
 			Name:       filename,

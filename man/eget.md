@@ -89,6 +89,26 @@ header: Eget Manual
 
 # FOR MAINTAINERS
 
+To guarantee compatibility of your software's pre-built binaries with Eget, you
+can follow these rules.
+
+* Provide your pre-built binaries as GitHub release assets.
+* Format the system name as `OS_Arch` and include it in every pre-built binary
+  name. Supported OSes are `darwin`/`macos`, `windows`, `linux`, `netbsd`, `openbsd`,
+  `freebsd`, `android`, `illumos`, `solaris`, `plan9`. Supported architectures
+  are `amd64`, `i386`, `arm`, `arm64`, `riscv64`.
+* If desired, include `*.sha256` files for each asset, containing the SHA-256
+  checksum of each asset. These checksums will be automatically verified by
+  Eget.
+* Include only a single executable or appimage per system in each release archive.
+* Use `.tar.gz`, `.tar.bz2`, `.tar`, or `.zip` for archives. You may also directly upload
+  the executable without an archive, or a compressed executable ending in `.gz` or `.bz2`.
+
+If you don't follow these rules, Eget may still work well with your software.
+Eget's auto-detection is much more relaxed than what is required by these
+rules, but if you follow these rules your software is guaranteed to be
+compatible with Eget.
+
 # BUGS
 
 See GitHub Issues: <https://github.com/zyedidia/eget/issues>
