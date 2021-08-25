@@ -42,7 +42,7 @@ case insensitive.
 | `amd64`       | `x64\|amd64\|x86(-\|_)?64`       |
 | `386`         | `x32\|amd32\|x86(-\|_)?32\|i?386` |
 | `arm`         | `arm`                         |
-| `arm64`       | `arm64\|armv8`                 |
+| `arm64`       | `arm64\|armv8\|aarch64`                 |
 | `riscv64`     | `riscv64`                     |
 
 If you would like a new OS/Architecture to be added, or find a case where the

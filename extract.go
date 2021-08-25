@@ -3,6 +3,7 @@ package main
 import (
 	"archive/tar"
 	"archive/zip"
+	"bufio"
 	"bytes"
 	"compress/bzip2"
 	"compress/gzip"
@@ -69,7 +70,7 @@ func NewExtractor(filename string, tool string, chooser Chooser) Extractor {
 		return bzip2.NewReader(r), nil
 	}
 	xunzipper := func(r io.Reader) (io.Reader, error) {
-		return xz.NewReader(r)
+		return xz.NewReader(bufio.NewReader(r))
 	}
 	nounzipper := func(r io.Reader) (io.Reader, error) {
 		return r, nil
