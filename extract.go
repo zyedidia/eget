@@ -12,6 +12,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/ulikunitz/xz"
 )
 
 // An Extractor reads in some archive data and extracts a particular file from
@@ -66,6 +68,9 @@ func NewExtractor(filename string, tool string, chooser Chooser) Extractor {
 	b2unzipper := func(r io.Reader) (io.Reader, error) {
 		return bzip2.NewReader(r), nil
 	}
+	xunzipper := func(r io.Reader) (io.Reader, error) {
+		return xz.NewReader(r)
+	}
 	nounzipper := func(r io.Reader) (io.Reader, error) {
 		return r, nil
 	}
@@ -80,6 +85,11 @@ func NewExtractor(filename string, tool string, chooser Chooser) Extractor {
 		return &TarExtractor{
 			File:       chooser,
 			Decompress: b2unzipper,
+		}
+	case strings.HasSuffix(filename, ".tar.xz"):
+		return &TarExtractor{
+			File:       chooser,
+			Decompress: xunzipper,
 		}
 	case strings.HasSuffix(filename, ".tar"):
 		return &TarExtractor{
@@ -101,6 +111,12 @@ func NewExtractor(filename string, tool string, chooser Chooser) Extractor {
 			Rename:     tool,
 			Name:       filename,
 			Decompress: b2unzipper,
+		}
+	case strings.HasSuffix(filename, ".xz"):
+		return &SingleFileExtractor{
+			Rename:     tool,
+			Name:       filename,
+			Decompress: xunzipper,
 		}
 	default:
 		return &SingleFileExtractor{

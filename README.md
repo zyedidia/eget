@@ -149,8 +149,9 @@ Eget should work out-of-the-box with many methods for releasing software, and do
   checksum of each asset. These checksums will be automatically verified by
   Eget.
 * Include only a single executable or appimage per system in each release archive.
-* Use `.tar.gz`, `.tar.bz2`, `.tar`, or `.zip` for archives. You may also directly upload
-  the executable without an archive, or a compressed executable ending in `.gz` or `.bz2`.
+* Use `.tar.gz`, `.tar.bz2`, `.tar.xz`, `.tar`, or `.zip` for archives. You may
+  also directly upload the executable without an archive, or a compressed
+  executable ending in `.gz`, `.bz2`, or `.xz`.
 
 # Contributing
 

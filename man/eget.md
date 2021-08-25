@@ -101,8 +101,9 @@ can follow these rules.
   checksum of each asset. These checksums will be automatically verified by
   Eget.
 * Include only a single executable or appimage per system in each release archive.
-* Use `.tar.gz`, `.tar.bz2`, `.tar`, or `.zip` for archives. You may also directly upload
-  the executable without an archive, or a compressed executable ending in `.gz` or `.bz2`.
+* Use `.tar.gz`, `.tar.bz2`, `.tar.xz`, `.tar`, or `.zip` for archives. You may
+  also directly upload the executable without an archive, or a compressed
+  executable ending in `.gz`, `.bz2`, or `.xz`.
 
 If you don't follow these rules, Eget may still work well with your software.
 Eget's auto-detection is much more relaxed than what is required by these

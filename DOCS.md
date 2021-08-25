@@ -76,10 +76,12 @@ Eget supports the following filetypes for assets:
 
 * `.tar.gz`: tar archive with gzip compression.
 * `.tar.bz2`: tar archive with bzip2 compression.
+* `.tar.xz`: tar archive with xz compression.
 * `.tar`: tar archive with no compression.
 * `.zip`: zip archive.
 * `.gz`: single file with gzip compression.
 * `.bz2`: single file with bzip2 compression.
+* `.xz`: single file with xz compression.
 * otherwise: single file.
 
 If a single file is "extracted" (no tar or zip archive), it will be marked
