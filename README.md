@@ -100,6 +100,7 @@ Usage:
 
 Application Options:
   -t, --tag=           tagged release to use instead of latest
+      --pre-release    include pre-releases when fetching the latest version
       --to=            move to given location after extracting
   -s, --system=        target system to download for (use "all" for all choices)
   -f, --file=          file name to extract

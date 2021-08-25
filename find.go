@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -18,6 +17,9 @@ type GithubRelease struct {
 	Assets []struct {
 		DownloadURL string `json:"browser_download_url"`
 	} `json:"assets"`
+
+	Prerelease bool   `json:"prerelease"`
+	Tag        string `json:"tag_name"`
 }
 
 type GithubError struct {
@@ -44,11 +46,20 @@ func (ge *GithubError) Error() string {
 // A GithubAssetFinder finds assets for the given Repo at the given tag. Tags
 // must be given as 'tag/<tag>'. Use 'latest' to get the latest release.
 type GithubAssetFinder struct {
-	Repo string
-	Tag  string
+	Repo       string
+	Tag        string
+	Prerelease bool
 }
 
 func (f *GithubAssetFinder) Find() ([]string, error) {
+	if f.Prerelease && f.Tag == "latest" {
+		tag, err := f.getLatestTag()
+		if err != nil {
+			return nil, err
+		}
+		f.Tag = fmt.Sprintf("tags/%s", tag)
+	}
+
 	// query github's API for this repo/tag pair.
 	url := fmt.Sprintf("https://api.github.com/repos/%s/releases/%s", f.Repo, f.Tag)
 	resp, err := Get(url)
@@ -72,7 +83,7 @@ func (f *GithubAssetFinder) Find() ([]string, error) {
 	}
 
 	// read and unmarshal the resulting json
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -90,6 +101,32 @@ func (f *GithubAssetFinder) Find() ([]string, error) {
 	}
 
 	return assets, nil
+}
+
+// finds the latest pre-release and returns the tag
+func (f *GithubAssetFinder) getLatestTag() (string, error) {
+	url := fmt.Sprintf("https://api.github.com/repos/%s/releases", f.Repo)
+	resp, err := Get(url)
+	if err != nil {
+		return "", fmt.Errorf("pre-release finder: %w", err)
+	}
+
+	var releases []GithubRelease
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("pre-release finder: %w", err)
+	}
+	err = json.Unmarshal(body, &releases)
+	if err != nil {
+		return "", fmt.Errorf("pre-release finder: %w", err)
+	}
+
+	if len(releases) <= 0 {
+		return "", fmt.Errorf("no releases found")
+	}
+
+	return releases[0].Tag, nil
 }
 
 // A DirectAssetFinder returns the embedded URL directly as the only asset.

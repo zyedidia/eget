@@ -74,8 +74,9 @@ func getFinder(project string, opts *Flags) (finder Finder, tool string) {
 		}
 
 		finder = &GithubAssetFinder{
-			Repo: repo,
-			Tag:  tag,
+			Repo:       repo,
+			Tag:        tag,
+			Prerelease: opts.Prerelease,
 		}
 	}
 	return finder, tool

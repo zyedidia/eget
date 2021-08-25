@@ -38,6 +38,10 @@ header: Eget Manual
 
 :    Use the given tagged release instead of the latest release. Example: **`eget -t nightly zyedidia/micro`**.
 
+  `--pre-release`
+
+:    Include pre-releases when fetching the latest version. This will get the latest overall release, even if it is a pre-release.
+
   `--to=`
 
 :    Move the executable to the given name after extraction. Example: **`eget zyedidia/micro --to /usr/local/bin`**. Example: **`eget --asset nvim.appimage --to nvim neovim/neovim`**.
