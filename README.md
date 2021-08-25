@@ -154,4 +154,4 @@ Eget should work out-of-the-box with many methods for releasing software, and do
 
 # Contributing
 
-If you find a bug, have a suggestion, or something else, please open an issue for discussion. Pull requests will only be accepted if they close an issue marked as "pr-approved".
+If you find a bug, have a suggestion, or something else, please open an issue for discussion. Pull requests will only be accepted if they close an issue marked as "pr-approved". See [DOCS.md](DOCS.md) for more in-depth documentation.
