@@ -30,6 +30,11 @@ header: Eget Manual
   SHA-256 checksum of the downloaded asset matches the one contained in that
   file, and abort installation if a mismatch occurs.
 
+  When installing an executable, Eget will place it in the current directory by
+  default. If the environment variable **`EGET_BIN`** is non-empty, Eget will
+  place the executable in that directory. The `--to` flag may also be used to
+  customize the install location.
+
   The behavior of Eget is configurable in a number of ways via options.
   Documentation for these options is provided below.
 
@@ -81,6 +86,8 @@ header: Eget Manual
   `-h, --help`
 
 :    Show a help message.
+
+# FOR MAINTAINERS
 
 # BUGS
 
