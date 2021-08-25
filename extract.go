@@ -13,7 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/ulikunitz/xz"
+	"github.com/xi2/xz"
 )
 
 // An Extractor reads in some archive data and extracts a particular file from
@@ -69,7 +69,7 @@ func NewExtractor(filename string, tool string, chooser Chooser) Extractor {
 		return bzip2.NewReader(r), nil
 	}
 	xunzipper := func(r io.Reader) (io.Reader, error) {
-		return xz.NewReader(r)
+		return xz.NewReader(r, 0)
 	}
 	nounzipper := func(r io.Reader) (io.Reader, error) {
 		return r, nil
