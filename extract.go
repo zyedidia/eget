@@ -299,7 +299,7 @@ type LiteralFileChooser struct {
 }
 
 func (lf *LiteralFileChooser) Choose(name string, mode fs.FileMode) (bool, bool) {
-	return false, filepath.Base(name) == lf.File
+	return false, filepath.Base(name) == filepath.Base(lf.File) && strings.HasSuffix(name, lf.File)
 }
 
 func (lf *LiteralFileChooser) String() string {
