@@ -15,6 +15,24 @@ type Detector interface {
 	Detect(assets []string) (string, []string, error)
 }
 
+type DetectorChain struct {
+	detectors []Detector
+}
+
+func (dc *DetectorChain) Detect(assets []string) (string, []string, error) {
+	for _, d := range dc.detectors {
+		choice, candidates, err := d.Detect(assets)
+		if len(candidates) == 0 && err != nil {
+			return "", nil, err
+		} else if len(candidates) == 0 {
+			return choice, nil, nil
+		} else {
+			assets = candidates
+		}
+	}
+	return "", assets, fmt.Errorf("%d candidates found for asset chain", len(assets))
+}
+
 // An OS represents a target operating system.
 type OS struct {
 	name     string

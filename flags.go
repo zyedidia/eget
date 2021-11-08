@@ -8,7 +8,7 @@ type Flags struct {
 	ExtractFile string `short:"f" long:"file" description:"file name to extract"`
 	Quiet       bool   `short:"q" long:"quiet" description:"only print essential output"`
 	DLOnly      bool   `long:"download-only" description:"stop after downloading the asset (no extraction)"`
-	Asset       string `long:"asset" description:"download a specific asset containing the given string"`
+	Asset       []string `long:"asset" description:"download a specific asset containing the given string"`
 	Hash        bool   `long:"sha256" description:"show the SHA-256 hash of the downloaded asset"`
 	Verify      string `long:"verify-sha256" description:"verify the downloaded asset checksum against the one provided"`
 	Version     bool   `short:"v" long:"version" description:"show version information"`

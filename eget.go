@@ -102,9 +102,19 @@ func getVerifier(sumAsset string, opts *Flags) (verifier Verifier, err error) {
 // --system pair provided by the user, or the runtime.GOOS/runtime.GOARCH
 // pair by default (the host system OS/Arch pair).
 func getDetector(opts *Flags) (detector Detector, err error) {
-	if opts.Asset != "" {
+	if len(opts.Asset) == 1 {
 		detector = &SingleAssetDetector{
-			Asset: opts.Asset,
+			Asset: opts.Asset[0],
+		}
+	} else if len(opts.Asset) > 1 {
+		detectors := make([]Detector, len(opts.Asset))
+		for i, a := range opts.Asset {
+			detectors[i] = &SingleAssetDetector{
+				Asset: a,
+			}
+		}
+		detector = &DetectorChain{
+			detectors: detectors,
 		}
 	} else if opts.System == "all" {
 		detector = &AllDetector{}
