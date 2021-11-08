@@ -128,7 +128,8 @@ func getDetector(opts *Flags) (detector Detector, err error) {
 func getExtractor(url, tool string, opts *Flags) (extractor Extractor) {
 	if opts.DLOnly {
 		extractor = &SingleFileExtractor{
-			Name: path.Base(url),
+			Name:   path.Base(url),
+			Rename: path.Base(url),
 			Decompress: func(r io.Reader) (io.Reader, error) {
 				return r, nil
 			},
