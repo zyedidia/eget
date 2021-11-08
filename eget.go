@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"time"
@@ -105,6 +106,14 @@ func getDetector(opts *Flags) (detector Detector, err error) {
 	if opts.Asset != "" {
 		detector = &SingleAssetDetector{
 			Asset: opts.Asset,
+		}
+	} else if opts.RgxAsset != "" {
+		rgx, err := regexp.Compile(opts.RgxAsset)
+		if err != nil {
+			return nil, err
+		}
+		detector = &RegexAssetDetector{
+			Asset: rgx,
 		}
 	} else if opts.System == "all" {
 		detector = &AllDetector{}

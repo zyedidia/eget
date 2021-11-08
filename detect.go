@@ -168,6 +168,26 @@ func (s *SingleAssetDetector) Detect(assets []string) (string, []string, error) 
 	return "", nil, fmt.Errorf("asset `%s` not found", s.Asset)
 }
 
+// RegexAssetDetector finds a single named asset.
+type RegexAssetDetector struct {
+	Asset *regexp.Regexp
+}
+
+func (r *RegexAssetDetector) Detect(assets []string) (string, []string, error) {
+	var candidates []string
+	for _, a := range assets {
+		if r.Asset.MatchString(a) {
+			candidates = append(candidates, a)
+		}
+	}
+	if len(candidates) == 1 {
+		return candidates[0], nil, nil
+	} else if len(candidates) > 1 {
+		return "", candidates, fmt.Errorf("%d candidates found for asset `%s`", len(candidates), r.Asset)
+	}
+	return "", nil, fmt.Errorf("asset `%s` not found", r.Asset)
+}
+
 // A SystemDetector matches a particular OS/Arch system pair.
 type SystemDetector struct {
 	Os   OS
