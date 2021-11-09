@@ -67,9 +67,9 @@ header: Eget Manual
 
 :    Stop after downloading the asset. This prevents Eget from performing extraction, allowing you to perform manual installation after the asset is downloaded.
 
-  `--asset=`
+  `-a, --asset=`
 
-:    Download a specific asset containing the given string. If there is an exact match with an asset, that asset is used regardless. Example: **`eget --asset nvim.appimage neovim/neovim`**.
+:    Download a specific asset containing the given string. If there is an exact match with an asset, that asset is used regardless. This option can be specified multiple times for additional filtering. Example: **`eget --asset nvim.appimage neovim/neovim`**. Example **`eget --download-only --asset amd64.deb --asset musl sharkdp/bat`**.
 
   `--sha256`
 

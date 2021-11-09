@@ -324,7 +324,7 @@ func main() {
 		if opts.Output != "" {
 			out = opts.Output
 		}
-		// only use $EGET_BIN if
+		// only use $EGET_BIN if all of the following are true
 		// 1. $EGET_BIN is non-empty
 		// 2. --to is not a path (not a path if no path separator is found)
 		// 3. The extracted file is executable

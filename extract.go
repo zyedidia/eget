@@ -250,6 +250,10 @@ func (sf *SingleFileExtractor) Extract(data []byte) (ExtractedFile, []ExtractedF
 
 // attempt to rename 'file' to an appropriate executable name
 func rename(file string, nameguess string) string {
+	if isDefinitelyNotExec(file) {
+		return file
+	}
+
 	var rename string
 	if strings.HasSuffix(file, ".appimage") {
 		// remove the .appimage extension
@@ -284,7 +288,17 @@ func (b *BinaryChooser) String() string {
 	return fmt.Sprintf("exe `%s`", b.Tool)
 }
 
+func isDefinitelyNotExec(file string) bool {
+	// file is definitely not executable if it is .deb, .1, or .txt
+	return strings.HasSuffix(file, ".deb") || strings.HasSuffix(file, ".1") ||
+		strings.HasSuffix(file, ".txt")
+}
+
 func isExec(file string, mode os.FileMode) bool {
+	if isDefinitelyNotExec(file) {
+		return false
+	}
+
 	// file is executable if it is one of the following:
 	// *.exe, *.appimage, no extension, executable file permissions
 	return strings.HasSuffix(file, ".exe") ||
