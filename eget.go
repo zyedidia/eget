@@ -178,11 +178,12 @@ func userSelect(choices []interface{}) int {
 	for {
 		fmt.Print("Enter selection number: ")
 		_, err := fmt.Scanf("%d", &choice)
-		if err == nil && (choice <= 0 || choice > len(choices)) {
-			err = fmt.Errorf("%d is out of bounds", choice)
-		}
 		if err == nil {
-			break
+			if choice <= 0 || choice > len(choices) {
+				err = fmt.Errorf("%d is out of bounds", choice)
+			} else {
+				break
+			}
 		}
 		fmt.Printf("Invalid selection: %v\n", err)
 	}
@@ -198,20 +199,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	if opts.Version {
-		fmt.Println("eget version", Version)
-		os.Exit(0)
-	}
-
-	if opts.Help {
-		flagparser.WriteHelp(os.Stdout)
-		os.Exit(0)
-	}
-
-	if len(args) <= 0 {
-		fmt.Println("no target given")
-		flagparser.WriteHelp(os.Stdout)
-		os.Exit(0)
+	switch {
+		case opts.Version :
+			fmt.Println("eget version", Version)
+			os.Exit(0)
+		case opts.Help :
+			flagparser.WriteHelp(os.Stdout)
+			os.Exit(0)
+		case len(args) <= 0 :
+			fmt.Println("no target given")
+			flagparser.WriteHelp(os.Stdout)
+			os.Exit(0)
 	}
 
 	// when --quiet is passed, send non-essential output to io.Discard
@@ -221,13 +219,8 @@ func main() {
 	}
 
 	finder, tool := getFinder(args[0], &opts)
-	assets, err := finder.Find()
-	if err != nil {
-		fatal(err)
-	}
-
-	detector, err := getDetector(&opts)
-	if err != nil {
+	if assets, err := finder.Find(); err != nil || 
+		detector, err := getDetector(&opts); err != nil {
 		fatal(err)
 	}
 
@@ -290,10 +283,12 @@ func main() {
 	err = verifier.Verify(body)
 	if err != nil {
 		fatal(err)
-	} else if opts.Verify == "" && sumAsset != "" {
-		fmt.Fprintf(output, "Checksum verified with %s\n", path.Base(sumAsset))
-	} else if opts.Verify != "" {
-		fmt.Fprintf(output, "Checksum verified\n")
+	} else if opts.Verify == "" {
+		if sumAsset != "" {
+			fmt.Fprintf(output, "Checksum verified with %s\n", path.Base(sumAsset))
+		} else {
+			fmt.Fprintf(output, "Checksum verified\n")
+		}
 	}
 
 	extractor := getExtractor(url, tool, &opts)
@@ -333,8 +328,7 @@ func main() {
 		}
 	}
 
-	err = writeFile(bin, out)
-	if err != nil {
+	if writeFile(bin, out) != nil {
 		fatal(err)
 	}
 
