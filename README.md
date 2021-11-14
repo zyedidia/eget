@@ -103,6 +103,12 @@ When installing an executable, Eget will place it in the current directory by
 default. If the environment variable `EGET_BIN` is non-empty, Eget will
 place the executable in that directory.
 
+GitHub limits API requests to 60 per hour for unauthenticated users. If you
+would like to perform more requests (up to 5,000 per hour), you can set up a
+personal access token and assign it to the environment variable `GITHUB_TOKEN`
+when running Eget. Eget will read this variable and send the token as
+authorization with requests to GitHub.
+
 ```
 Usage:
   eget [OPTIONS] PROJECT

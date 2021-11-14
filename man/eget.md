@@ -35,6 +35,12 @@ header: Eget Manual
   place the executable in that directory. The `--to` flag may also be used to
   customize the install location.
 
+  GitHub limits API requests to 60 per hour for unauthenticated users. If you
+  would like to perform more requests (up to 5,000 per hour), you can set up a
+  personal access token and assign it to the environment variable
+  **`GITHUB_TOKEN`** when running Eget. Eget will read this variable and send
+  the token as authorization with requests to GitHub.
+
   The behavior of Eget is configurable in a number of ways via options.
   Documentation for these options is provided below.
 

@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"net/http"
+	"os"
 
 	pb "github.com/schollz/progressbar/v3"
 )
@@ -12,10 +14,9 @@ func Get(url string) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	// TODO: rate-limiting authorization
-	// if req.URL.Scheme == "https" && req.Host == "api.github.com" && os.Getenv("GITHUB_TOKEN") != "" {
-	// 	req.Header.Set("Authorization:", fmt.Sprintf("token %s", os.Getenv("GITHUB_TOKEN")))
-	// }
+	if req.URL.Scheme == "https" && req.Host == "api.github.com" && os.Getenv("GITHUB_TOKEN") != "" {
+		req.Header.Set("Authorization:", fmt.Sprintf("token %s", os.Getenv("GITHUB_TOKEN")))
+	}
 	return http.DefaultClient.Do(req)
 }
 
