@@ -27,6 +27,11 @@ func IsUrl(s string) bool {
 	return err == nil && u.Scheme != "" && u.Host != ""
 }
 
+func IsLocalFile(s string) bool {
+	_, err := os.Stat(s)
+	return err == nil
+}
+
 // IsDirectory returns true if the file at 'path' is a directory.
 func IsDirectory(path string) bool {
 	fileInfo, err := os.Stat(path)
@@ -52,7 +57,7 @@ func checksumAsset(asset string, assets []string) string {
 // repo is provided, we assume the repo name is the 'tool' name (for direct
 // URLs, the tool name is unknown and remains empty).
 func getFinder(project string, opts *Flags) (finder Finder, tool string) {
-	if IsUrl(project) {
+	if IsLocalFile(project) || IsUrl(project) {
 		finder = &DirectAssetFinder{
 			URL: project,
 		}

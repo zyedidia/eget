@@ -22,8 +22,9 @@ header: Eget Manual
 
   The **`PROJECT`** argument passed to Eget should either be a GitHub
   repository, formatted as **`user/repo`**, in which case Eget will search the
-  release assets, or a direct URL, in which case Eget will directly download
-  and extract from the given URL.
+  release assets, a direct URL, in which case Eget will directly download and
+  extract from the given URL, or a local file, in which case Eget will extract
+  directly from the local file.
 
   If Eget downloads an asset called `xxx` and there also exists an asset called
   `xxx.sha256` or `xxx.sha256sum`, Eget will automatically verify that the

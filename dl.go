@@ -25,6 +25,16 @@ func Get(url string) (*http.Response, error) {
 // size of the file being downloaded, and the download will write to the
 // returned progress bar.
 func Download(url string, out io.Writer, getbar func(size int64) *pb.ProgressBar) error {
+	if IsLocalFile(url) {
+		f, err := os.Open(url)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+		_, err = io.Copy(out, f)
+		return err
+	}
+
 	resp, err := Get(url)
 	if err != nil {
 		return err
