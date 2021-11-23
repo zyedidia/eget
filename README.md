@@ -125,6 +125,7 @@ Application Options:
       --asset=         download a specific asset containing the given string
       --sha256         show the SHA-256 hash of the downloaded asset
       --verify-sha256= verify the downloaded asset checksum against the one provided
+      --rate           show GitHub API rate limiting information
   -v, --version        show version information
   -h, --help           show this help message
 ```

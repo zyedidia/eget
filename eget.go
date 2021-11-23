@@ -213,6 +213,15 @@ func main() {
 		os.Exit(0)
 	}
 
+	if opts.Rate {
+		rdat, err := GetRateLimit()
+		if err != nil {
+			fatal(err)
+		}
+		fmt.Println(rdat)
+		os.Exit(0)
+	}
+
 	if len(args) <= 0 {
 		fmt.Println("no target given")
 		flagparser.WriteHelp(os.Stdout)

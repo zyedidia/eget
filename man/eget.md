@@ -86,6 +86,10 @@ header: Eget Manual
 
 :    Verify the SHA-256 hash of the downloaded asset against the one provided as an argument. Similar to `--sha256`, but Eget will do the verification for you.
 
+  `--rate`
+
+:    Show GitHub API rate limiting information.
+
   `-v, --version`
 
 :    Show version information.

@@ -1,10 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"time"
 
 	pb "github.com/schollz/progressbar/v3"
 )
@@ -15,9 +17,54 @@ func Get(url string) (*http.Response, error) {
 		return nil, err
 	}
 	if req.URL.Scheme == "https" && req.Host == "api.github.com" && os.Getenv("GITHUB_TOKEN") != "" {
-		req.Header.Set("Authorization:", fmt.Sprintf("token %s", os.Getenv("GITHUB_TOKEN")))
+		req.Header.Set("Authorization", fmt.Sprintf("token %s", os.Getenv("GITHUB_TOKEN")))
 	}
 	return http.DefaultClient.Do(req)
+}
+
+type RateLimitJson struct {
+	Resources map[string]RateLimit
+}
+
+type RateLimit struct {
+	Limit     int
+	Remaining int
+	Reset     int64
+}
+
+func (r RateLimit) ResetTime() time.Time {
+	return time.Unix(r.Reset, 0)
+}
+
+func (r RateLimit) String() string {
+	return fmt.Sprintf("Limit: %d, Remaining: %d, Reset: %v", r.Limit, r.Remaining, r.ResetTime())
+}
+
+func GetRateLimit() (RateLimit, error) {
+	url := "https://api.github.com/rate_limit"
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return RateLimit{}, err
+	}
+	if req.URL.Scheme == "https" && req.Host == "api.github.com" && os.Getenv("GITHUB_TOKEN") != "" {
+		req.Header.Set("Authorization", fmt.Sprintf("token %s", os.Getenv("GITHUB_TOKEN")))
+	}
+	req.Header.Set("Accept", "application/vnd.github.v3+json")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return RateLimit{}, err
+	}
+	defer resp.Body.Close()
+
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return RateLimit{}, err
+	}
+
+	var parsed RateLimitJson
+	err = json.Unmarshal(b, &parsed)
+
+	return parsed.Resources["core"], err
 }
 
 // Download the file at 'url' and write the http response body to 'out'. The
