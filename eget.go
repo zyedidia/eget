@@ -163,6 +163,8 @@ func getExtractor(url, tool string, opts *Flags) (extractor Extractor) {
 
 // Write an extracted file to disk with a new name.
 func writeFile(ef ExtractedFile, rename string) error {
+	// remove file if it exists already
+	os.Remove(rename)
 	f, err := os.OpenFile(rename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, ef.Mode())
 	if err != nil {
 		return err
