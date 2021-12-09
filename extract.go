@@ -77,7 +77,7 @@ func NewExtractor(filename string, tool string, chooser Chooser) Extractor {
 	}
 
 	switch {
-	case strings.HasSuffix(filename, ".tar.gz"):
+	case strings.HasSuffix(filename, ".tar.gz"), strings.HasSuffix(filename, ".tgz"):
 		return &TarExtractor{
 			File:       chooser,
 			Decompress: gunzipper,

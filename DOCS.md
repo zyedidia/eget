@@ -74,7 +74,7 @@ of permissions within the archive.
 
 Eget supports the following filetypes for assets:
 
-* `.tar.gz`: tar archive with gzip compression.
+* `.tar.gz`/`.tgz`: tar archive with gzip compression.
 * `.tar.bz2`: tar archive with bzip2 compression.
 * `.tar.xz`: tar archive with xz compression.
 * `.tar`: tar archive with no compression.
