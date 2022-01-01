@@ -1,8 +1,6 @@
 package main
 
 import (
-	"archive/tar"
-	"archive/zip"
 	"bufio"
 	"bytes"
 	"compress/bzip2"
@@ -78,27 +76,32 @@ func NewExtractor(filename string, tool string, chooser Chooser) Extractor {
 
 	switch {
 	case strings.HasSuffix(filename, ".tar.gz"), strings.HasSuffix(filename, ".tgz"):
-		return &TarExtractor{
+		return &ArchiveExtractor{
 			File:       chooser,
+			Ar:         NewTarArchive,
 			Decompress: gunzipper,
 		}
 	case strings.HasSuffix(filename, ".tar.bz2"):
-		return &TarExtractor{
+		return &ArchiveExtractor{
 			File:       chooser,
+			Ar:         NewTarArchive,
 			Decompress: b2unzipper,
 		}
 	case strings.HasSuffix(filename, ".tar.xz"):
-		return &TarExtractor{
+		return &ArchiveExtractor{
 			File:       chooser,
+			Ar:         NewTarArchive,
 			Decompress: xunzipper,
 		}
 	case strings.HasSuffix(filename, ".tar"):
-		return &TarExtractor{
+		return &ArchiveExtractor{
 			File:       chooser,
+			Ar:         NewTarArchive,
 			Decompress: nounzipper,
 		}
 	case strings.HasSuffix(filename, ".zip"):
-		return &ZipExtractor{
+		return &ArchiveExtractor{
+			Ar:   NewZipArchive,
 			File: chooser,
 		}
 	case strings.HasSuffix(filename, ".gz"):
@@ -128,38 +131,38 @@ func NewExtractor(filename string, tool string, chooser Chooser) Extractor {
 	}
 }
 
-// TarExtractor extracts files matched by 'File' in a tar archive. It first
-// decompresses the archive using the 'Decompress. function.
-type TarExtractor struct {
+type ArchiveFn func(data []byte, decomp DecompFn) (Archive, error)
+type DecompFn func(r io.Reader) (io.Reader, error)
+
+type ArchiveExtractor struct {
 	File       Chooser
-	Decompress func(r io.Reader) (io.Reader, error)
+	Ar         ArchiveFn
+	Decompress DecompFn
 }
 
-func (t *TarExtractor) Extract(data []byte) (ExtractedFile, []ExtractedFile, error) {
+func (a *ArchiveExtractor) Extract(data []byte) (ExtractedFile, []ExtractedFile, error) {
 	var candidates []ExtractedFile
 
-	r := bytes.NewReader(data)
-	dr, err := t.Decompress(r)
+	ar, err := a.Ar(data, a.Decompress)
 	if err != nil {
 		return ExtractedFile{}, nil, err
 	}
-	tr := tar.NewReader(dr)
 	for {
-		hdr, err := tr.Next()
+		f, err := ar.Next()
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			return ExtractedFile{}, nil, fmt.Errorf("tar extract: %w", err)
+			return ExtractedFile{}, nil, fmt.Errorf("extract: %w", err)
 		}
-		if hdr.Typeflag == tar.TypeReg {
-			direct, possible := t.File.Choose(hdr.Name, fs.FileMode(hdr.Mode))
+		if !f.Dir {
+			direct, possible := a.File.Choose(f.Name, f.Mode)
 			if direct || possible {
-				data, err := io.ReadAll(tr)
+				data, err := f.ReadAll()
 				f := ExtractedFile{
-					Name:        rename(hdr.Name, hdr.Name),
-					ArchiveName: hdr.Name,
-					mode:        fs.FileMode(hdr.Mode),
+					Name:        rename(f.Name, f.Name),
+					ArchiveName: f.Name,
+					mode:        f.Mode,
 					Data:        data,
 				}
 				if direct {
@@ -174,54 +177,9 @@ func (t *TarExtractor) Extract(data []byte) (ExtractedFile, []ExtractedFile, err
 	if len(candidates) == 1 {
 		return candidates[0], nil, nil
 	} else if len(candidates) == 0 {
-		return ExtractedFile{}, candidates, fmt.Errorf("target %v not found in archive", t.File)
+		return ExtractedFile{}, candidates, fmt.Errorf("target %v not found in archive", a.File)
 	}
-	return ExtractedFile{}, candidates, fmt.Errorf("%d candidates for target %v found", len(candidates), t.File)
-}
-
-// A ZipExtractor extracts files chosen by 'File' from a zip archive.
-type ZipExtractor struct {
-	File Chooser
-}
-
-func (z *ZipExtractor) Extract(data []byte) (ExtractedFile, []ExtractedFile, error) {
-	var candidates []ExtractedFile
-
-	r := bytes.NewReader(data)
-	zr, err := zip.NewReader(r, int64(len(data)))
-	if err != nil {
-		return ExtractedFile{}, nil, fmt.Errorf("zip extract: %w", err)
-	}
-
-	for _, f := range zr.File {
-		direct, possible := z.File.Choose(f.Name, f.Mode())
-		if direct || possible {
-			rc, err := f.Open()
-			if err != nil {
-				return ExtractedFile{}, nil, fmt.Errorf("zip extract: %w", err)
-			}
-			defer rc.Close()
-			data, err := io.ReadAll(rc)
-			f := ExtractedFile{
-				Name:        rename(f.Name, f.Name),
-				ArchiveName: f.Name,
-				mode:        f.Mode(),
-				Data:        data,
-			}
-			if direct {
-				return f, nil, err
-			}
-			if err == nil {
-				candidates = append(candidates, f)
-			}
-		}
-	}
-	if len(candidates) == 1 {
-		return candidates[0], nil, nil
-	} else if len(candidates) == 0 {
-		return ExtractedFile{}, candidates, fmt.Errorf("target %v not found in archive", z.File)
-	}
-	return ExtractedFile{}, candidates, fmt.Errorf("%d candidates for target %v found", len(candidates), z.File)
+	return ExtractedFile{}, candidates, fmt.Errorf("%d candidates for target %v found", len(candidates), a.File)
 }
 
 // SingleFileExtractor extracts files called 'Name' after decompressing the
