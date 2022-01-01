@@ -44,14 +44,14 @@ func (t *TarArchive) Next() (File, error) {
 		if err != nil {
 			return File{}, err
 		}
-		if hdr.Typeflag == tar.TypeReg {
+		if hdr.Typeflag == tar.TypeReg || hdr.Typeflag == tar.TypeDir {
 			return File{
 				Name: hdr.Name,
 				Mode: fs.FileMode(hdr.Mode),
 				ReadAll: func() ([]byte, error) {
 					return io.ReadAll(t.r)
 				},
-				Dir: false,
+				Dir: hdr.Typeflag == tar.TypeDir,
 			}, err
 		}
 	}

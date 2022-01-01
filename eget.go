@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/fs"
 	"net/url"
 	"os"
 	"path"
@@ -162,15 +163,18 @@ func getExtractor(url, tool string, opts *Flags) (extractor Extractor) {
 }
 
 // Write an extracted file to disk with a new name.
-func writeFile(ef ExtractedFile, rename string) error {
+func writeFile(data []byte, rename string, mode fs.FileMode) error {
 	// remove file if it exists already
 	os.Remove(rename)
-	f, err := os.OpenFile(rename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, ef.Mode())
+	// make parent directories if necessary
+	os.MkdirAll(filepath.Dir(rename), 0755)
+
+	f, err := os.OpenFile(rename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, mode)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
-	_, err = f.Write(ef.Data)
+	_, err = f.Write(data)
 	return err
 }
 
@@ -314,7 +318,7 @@ func main() {
 
 	extractor := getExtractor(url, tool, &opts)
 
-	// extract the binary information
+	// get extraction candidates
 	bin, bins, err := extractor.Extract(body)
 	if len(bins) != 0 && err != nil {
 		// if there are multiple candidates, have the user select manually
@@ -349,7 +353,7 @@ func main() {
 		}
 	}
 
-	err = writeFile(bin, out)
+	err = bin.Extract(out)
 	if err != nil {
 		fatal(err)
 	}

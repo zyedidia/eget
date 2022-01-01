@@ -28,15 +28,19 @@ type ExtractedFile struct {
 	Name        string // name to extract to
 	ArchiveName string // name in archive
 	mode        fs.FileMode
-	Data        []byte
+	Extract     func(to string) error
 }
 
 // Mode returns the filemode of the extracted file.
 func (e ExtractedFile) Mode() fs.FileMode {
-	if isExec(e.Name, e.mode) {
-		return e.mode | 0111
+	return modeFrom(e.Name, e.mode)
+}
+
+func modeFrom(fname string, mode fs.FileMode) fs.FileMode {
+	if isExec(fname, mode) {
+		return mode | 0111
 	}
-	return e.mode
+	return mode
 }
 
 // String returns the archive name of this extracted file
@@ -155,22 +159,60 @@ func (a *ArchiveExtractor) Extract(data []byte) (ExtractedFile, []ExtractedFile,
 		if err != nil {
 			return ExtractedFile{}, nil, fmt.Errorf("extract: %w", err)
 		}
-		if !f.Dir {
-			direct, possible := a.File.Choose(f.Name, f.Mode)
-			if direct || possible {
-				data, err := f.ReadAll()
-				f := ExtractedFile{
-					Name:        rename(f.Name, f.Name),
-					ArchiveName: f.Name,
-					mode:        f.Mode,
-					Data:        data,
+		direct, possible := a.File.Choose(f.Name, f.Mode)
+		if direct || possible {
+			name := rename(f.Name, f.Name)
+
+			var extract func(to string) error
+			if !f.Dir {
+				extract = func(to string) error {
+					data, err := f.ReadAll()
+					if err != nil {
+						return err
+					}
+					return writeFile(data, to, modeFrom(name, f.Mode))
 				}
-				if direct {
-					return f, nil, err
+			} else {
+				extract = func(to string) error {
+					ar, err := a.Ar(data, a.Decompress)
+					if err != nil {
+						return err
+					}
+					for {
+						subf, err := ar.Next()
+						if err == io.EOF {
+							break
+						} else if err != nil {
+							return fmt.Errorf("extract: %w", err)
+						} else if !strings.HasPrefix(subf.Name, f.Name) {
+							continue
+						}
+
+						data, err := subf.ReadAll()
+						if err != nil {
+							return fmt.Errorf("extract: %w", err)
+						}
+						name = filepath.Join(to, subf.Name[len(f.Name):])
+						err = writeFile(data, name, subf.Mode)
+						if err != nil {
+							return fmt.Errorf("extract: %w", err)
+						}
+					}
+					return nil
 				}
-				if err == nil {
-					candidates = append(candidates, f)
-				}
+			}
+
+			f := ExtractedFile{
+				Name:        name,
+				ArchiveName: f.Name,
+				mode:        f.Mode,
+				Extract:     extract,
+			}
+			if direct {
+				return f, nil, err
+			}
+			if err == nil {
+				candidates = append(candidates, f)
 			}
 		}
 	}
@@ -191,19 +233,25 @@ type SingleFileExtractor struct {
 }
 
 func (sf *SingleFileExtractor) Extract(data []byte) (ExtractedFile, []ExtractedFile, error) {
-	r := bytes.NewReader(data)
-	dr, err := sf.Decompress(r)
-	if err != nil {
-		return ExtractedFile{}, nil, err
-	}
-
-	decdata, err := io.ReadAll(dr)
+	name := rename(sf.Name, sf.Rename)
 	return ExtractedFile{
-		Name:        rename(sf.Name, sf.Rename),
+		Name:        name,
 		ArchiveName: sf.Name,
 		mode:        0666,
-		Data:        decdata,
-	}, nil, err
+		Extract: func(to string) error {
+			r := bytes.NewReader(data)
+			dr, err := sf.Decompress(r)
+			if err != nil {
+				return err
+			}
+
+			decdata, err := io.ReadAll(dr)
+			if err != nil {
+				return err
+			}
+			return writeFile(decdata, to, modeFrom(name, 0666))
+		},
+	}, nil, nil
 }
 
 // attempt to rename 'file' to an appropriate executable name
