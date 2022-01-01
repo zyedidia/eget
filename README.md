@@ -8,8 +8,8 @@
 tools. It downloads and extracts pre-built binaries from releases on GitHub. To
 use it, provide a repository and Eget will search through the assets from the
 latest release in an attempt to find a suitable prebuilt binary for your
-system. If one is found, the asset will be downloaded and Eget will extract
-the binary to the current directory. Eget should only be used for installing
+system. If one is found, the asset will be downloaded and Eget will extract the
+binary to the current directory. Eget should only be used for installing
 simple, static prebuilt binaries, where the extracted binary is all that is
 needed for installation. For more complex installation, you may use the
 `--download-only` option, and perform extraction manually.
@@ -104,6 +104,10 @@ When installing an executable, Eget will place it in the current directory by
 default. If the environment variable `EGET_BIN` is non-empty, Eget will
 place the executable in that directory.
 
+If a directory has been requested as the target, Eget will recursively extract
+all files in the directory and place them in the directory given by `--to`, or
+the current directory if no flag is provided.
+
 GitHub limits API requests to 60 per hour for unauthenticated users. If you
 would like to perform more requests (up to 5,000 per hour), you can set up a
 personal access token and assign it to the environment variable `GITHUB_TOKEN`
@@ -134,25 +138,44 @@ Application Options:
 
 ### How is this different from a package manager?
 
-Eget only downloads pre-built binaries uploaded to GitHub by the developers of the repository. It does not maintain a central list of packages, nor does it do any dependency management. Eget does not "install" executables by placing them in system-wide directories (such as `/usr/local/bin`) unless instructed, and it does not maintain a registry for uninstallation. Eget works best for installing software that comes as a single binary with no additional files needed (CLI tools made in Go, Rust, or Haskell tend to fit this description).
+Eget only downloads pre-built binaries uploaded to GitHub by the developers of
+the repository. It does not maintain a central list of packages, nor does it do
+any dependency management. Eget does not "install" executables by placing them
+in system-wide directories (such as `/usr/local/bin`) unless instructed, and it
+does not maintain a registry for uninstallation. Eget works best for installing
+software that comes as a single binary with no additional files needed (CLI
+tools made in Go, Rust, or Haskell tend to fit this description).
 
 ### Is this secure?
 
-Eget does not run any downloaded code -- it just finds executables from GitHub releases and downloads/extracts them. If you trust the code you are downloading (i.e. if you trust downloading pre-built binaries from GitHub) then using Eget is perfectly safe. If Eget finds a matching asset ending in `.sha256` or `.sha256sum`, the SHA-256 checksum of your download will be automatically verified. You can also use the `--sha256` or `--verify-sha256` options to manually verify the SHA-256 checksums of your downloads (checksums are provided in an alternative manner by your download source).
+Eget does not run any downloaded code -- it just finds executables from GitHub
+releases and downloads/extracts them. If you trust the code you are downloading
+(i.e. if you trust downloading pre-built binaries from GitHub) then using Eget
+is perfectly safe. If Eget finds a matching asset ending in `.sha256` or
+`.sha256sum`, the SHA-256 checksum of your download will be automatically
+verified. You can also use the `--sha256` or `--verify-sha256` options to
+manually verify the SHA-256 checksums of your downloads (checksums are provided
+in an alternative manner by your download source).
 
 ### Does this work only for GitHub repositories?
 
-At the moment Eget supports searching GitHub releases, direct URLs, and local files. If you provide a direct URL instead of a GitHub repository, Eget will skip the detection phase and download directly from the given URL. If you provide a local file, Eget will skip detection and download and just perform extraction from the local file.
+At the moment Eget supports searching GitHub releases, direct URLs, and local
+files. If you provide a direct URL instead of a GitHub repository, Eget will
+skip the detection phase and download directly from the given URL. If you
+provide a local file, Eget will skip detection and download and just perform
+extraction from the local file.
 
 ### How can I make my software compatible with Eget?
 
-Eget should work out-of-the-box with many methods for releasing software, and does not require that you build your release process for Eget in particular. However, here are some rules that will guarantee compatibility with Eget.
+Eget should work out-of-the-box with many methods for releasing software, and
+does not require that you build your release process for Eget in particular.
+However, here are some rules that will guarantee compatibility with Eget.
 
 * Provide your pre-built binaries as GitHub release assets.
 * Format the system name as `OS_Arch` and include it in every pre-built binary
-  name. Supported OSes are `darwin`/`macos`, `windows`, `linux`, `netbsd`, `openbsd`,
-  `freebsd`, `android`, `illumos`, `solaris`, `plan9`. Supported architectures
-  are `amd64`, `i386`, `arm`, `arm64`, `riscv64`.
+  name. Supported OSes are `darwin`/`macos`, `windows`, `linux`, `netbsd`,
+  `openbsd`, `freebsd`, `android`, `illumos`, `solaris`, `plan9`. Supported
+  architectures are `amd64`, `i386`, `arm`, `arm64`, `riscv64`.
 * If desired, include `*.sha256` files for each asset, containing the SHA-256
   checksum of each asset. These checksums will be automatically verified by
   Eget.
@@ -163,4 +186,7 @@ Eget should work out-of-the-box with many methods for releasing software, and do
 
 # Contributing
 
-If you find a bug, have a suggestion, or something else, please open an issue for discussion. Pull requests will only be accepted if they close an issue marked as "pr-approved". See [DOCS.md](DOCS.md) for more in-depth documentation.
+If you find a bug, have a suggestion, or something else, please open an issue
+for discussion. Pull requests will only be accepted if they close an issue
+marked as "pr-approved". See [DOCS.md](DOCS.md) for more in-depth
+documentation.
