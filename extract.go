@@ -186,6 +186,8 @@ func (a *ArchiveExtractor) Extract(data []byte) (ExtractedFile, []ExtractedFile,
 							return fmt.Errorf("extract: %w", err)
 						} else if !strings.HasPrefix(subf.Name, f.Name) {
 							continue
+						} else if subf.Dir {
+							continue
 						}
 
 						data, err := subf.ReadAll()
