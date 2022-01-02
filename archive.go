@@ -79,6 +79,7 @@ func (z *ZipArchive) Next() (File, error) {
 	}
 
 	f := z.r.File[z.idx]
+	z.idx++
 
 	return File{
 		Name: f.Name,
