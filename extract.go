@@ -30,6 +30,7 @@ type ExtractedFile struct {
 	ArchiveName string // name in archive
 	mode        fs.FileMode
 	Extract     func(to string) error
+	Dir         bool
 }
 
 // Mode returns the filemode of the extracted file.
@@ -223,6 +224,7 @@ func (a *ArchiveExtractor) Extract(data []byte, multiple bool) (ExtractedFile, [
 				ArchiveName: f.Name,
 				mode:        f.Mode,
 				Extract:     extract,
+				Dir:         f.Dir,
 			}
 			if direct && !multiple {
 				return ef, nil, err

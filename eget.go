@@ -365,7 +365,7 @@ func main() {
 			// 1. $EGET_BIN is non-empty
 			// 2. --to is not a path (not a path if no path separator is found)
 			// 3. The extracted file is executable
-			if os.Getenv("EGET_BIN") != "" && !strings.ContainsRune(out, os.PathSeparator) && mode&0111 != 0 {
+			if os.Getenv("EGET_BIN") != "" && !strings.ContainsRune(out, os.PathSeparator) && mode&0111 != 0 && !bin.Dir {
 				out = filepath.Join(os.Getenv("EGET_BIN"), out)
 			}
 		}
