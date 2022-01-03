@@ -42,6 +42,7 @@ version:
 
 clean:
 	rm -f eget eget.exe eget.1 eget-*.tar.gz eget-*.zip
+	rm -f test/eget.1 test/fd test/micro test/nvim test/pandoc test/rg.exe
 	rm -rf eget-*/
 
 .PHONY: build clean install package version fmt vet test
