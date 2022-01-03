@@ -68,7 +68,11 @@ header: Eget Manual
 
   `-f, --file=`
 
-:    Extract the file with the given filename. You may want use this option to extract non-binary files. Example: **`eget -f LICENSE zyedidia/micro`**.
+:    Extract the file that matches the given glob. You may want use this option to extract non-binary files. Example: **`eget -f LICENSE zyedidia/micro`**.
+
+  `--all`
+
+:    Extract all candidate files.
 
   `-q, --quiet`
 

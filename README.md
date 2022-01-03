@@ -123,10 +123,12 @@ Application Options:
       --pre-release    include pre-releases when fetching the latest version
       --to=            move to given location after extracting
   -s, --system=        target system to download for (use "all" for all choices)
-  -f, --file=          file name to extract
+  -f, --file=          glob to select files for extraction
+      --all            extract all candidate files
   -q, --quiet          only print essential output
       --download-only  stop after downloading the asset (no extraction)
-      --asset=         download a specific asset containing the given string
+  -a, --asset=         download a specific asset containing the given string; can be specified multiple times for additional
+                       filtering
       --sha256         show the SHA-256 hash of the downloaded asset
       --verify-sha256= verify the downloaded asset checksum against the one provided
       --rate           show GitHub API rate limiting information
