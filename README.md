@@ -38,6 +38,7 @@ eget --system darwin/amd64 sharkdp/fd
 eget BurntSushi/ripgrep
 eget -f eget.1 zyedidia/eget
 eget zachjs/sv2v
+eget https://go.dev/dl/go1.17.5.linux-amd64.tar.gz --file go --to ~/go1.17.5
 ```
 
 # How to get Eget
