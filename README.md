@@ -104,9 +104,12 @@ When installing an executable, Eget will place it in the current directory by
 default. If the environment variable `EGET_BIN` is non-empty, Eget will
 place the executable in that directory.
 
-If a directory has been requested as the target, Eget will recursively extract
-all files in the directory and place them in the directory given by `--to`, or
-the current directory if no flag is provided.
+Directories can also be specified as files to extract, and all files within
+them will be extracted. For example:
+
+```
+eget https://go.dev/dl/go1.17.5.linux-amd64.tar.gz --file go --to ~/go1.17.5
+```
 
 GitHub limits API requests to 60 per hour for unauthenticated users. If you
 would like to perform more requests (up to 5,000 per hour), you can set up a
