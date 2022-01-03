@@ -354,6 +354,9 @@ func main() {
 		out := filepath.Base(bin.Name)
 		if opts.Output != "" && IsDirectory(opts.Output) {
 			out = filepath.Join(opts.Output, out)
+		} else if opts.Output != "" && opts.All {
+			os.MkdirAll(opts.Output, 0755)
+			out = filepath.Join(opts.Output, out)
 		} else {
 			if opts.Output != "" {
 				out = opts.Output
