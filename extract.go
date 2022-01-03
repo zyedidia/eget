@@ -53,7 +53,7 @@ func (e ExtractedFile) String() string {
 // immediately extracted if found), or a possible match (only extract if it is
 // the only match, or if the user manually requests it).
 type Chooser interface {
-	Choose(name string, mode fs.FileMode) (direct bool, possible bool)
+	Choose(name string, dir bool, mode fs.FileMode) (direct bool, possible bool)
 }
 
 // NewExtractor constructs an extractor for the given archive file using the
@@ -171,7 +171,7 @@ func (a *ArchiveExtractor) Extract(data []byte, multiple bool) (ExtractedFile, [
 		if hasdir {
 			continue
 		}
-		direct, possible := a.File.Choose(f.Name, f.Mode)
+		direct, possible := a.File.Choose(f.Name, f.Dir, f.Mode)
 		if direct || possible {
 			name := rename(f.Name, f.Name)
 
@@ -297,7 +297,11 @@ type BinaryChooser struct {
 	Tool string
 }
 
-func (b *BinaryChooser) Choose(name string, mode fs.FileMode) (bool, bool) {
+func (b *BinaryChooser) Choose(name string, dir bool, mode fs.FileMode) (bool, bool) {
+	if dir {
+		return false, false
+	}
+
 	fmatch := filepath.Base(name) == b.Tool ||
 		filepath.Base(name) == b.Tool+".exe" ||
 		filepath.Base(name) == b.Tool+".appimage"
@@ -334,7 +338,7 @@ type LiteralFileChooser struct {
 	File string
 }
 
-func (lf *LiteralFileChooser) Choose(name string, mode fs.FileMode) (bool, bool) {
+func (lf *LiteralFileChooser) Choose(name string, dir bool, mode fs.FileMode) (bool, bool) {
 	return false, filepath.Base(name) == filepath.Base(lf.File) && strings.HasSuffix(name, lf.File)
 }
 
@@ -355,7 +359,7 @@ func NewGlobChooser(gl string) (*GlobChooser, error) {
 	}, err
 }
 
-func (gc *GlobChooser) Choose(name string, mode fs.FileMode) (bool, bool) {
+func (gc *GlobChooser) Choose(name string, dir bool, mode fs.FileMode) (bool, bool) {
 	if len(name) > 0 && name[len(name)-1] == '/' {
 		name = name[:len(name)-1]
 	}
