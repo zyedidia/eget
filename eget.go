@@ -328,12 +328,17 @@ func main() {
 	if len(bins) != 0 && err != nil && !opts.All {
 		// if there are multiple candidates, have the user select manually
 		fmt.Printf("%v: please select manually\n", err)
-		choices := make([]interface{}, len(bins))
+		choices := make([]interface{}, len(bins)+1)
 		for i := range bins {
 			choices[i] = bins[i]
 		}
+		choices[len(bins)] = "all"
 		choice := userSelect(choices)
-		bin = bins[choice-1]
+		if choice == len(bins)+1 {
+			opts.All = true
+		} else {
+			bin = bins[choice-1]
+		}
 	} else if err != nil && len(bins) == 0 {
 		fatal(err)
 	}
