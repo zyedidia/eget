@@ -13,13 +13,14 @@ import (
 	"strings"
 
 	"github.com/ulikunitz/xz"
+	"github.com/zyedidia/glob"
 )
 
 // An Extractor reads in some archive data and extracts a particular file from
 // it. If there are multiple candidates it returns a list and an error
 // explaining what happened.
 type Extractor interface {
-	Extract(data []byte) (ExtractedFile, []ExtractedFile, error)
+	Extract(data []byte, multiple bool) (ExtractedFile, []ExtractedFile, error)
 }
 
 // An ExtractedFile contains the data, name, and permissions of a file in the
@@ -144,7 +145,7 @@ type ArchiveExtractor struct {
 	Decompress DecompFn
 }
 
-func (a *ArchiveExtractor) Extract(data []byte) (ExtractedFile, []ExtractedFile, error) {
+func (a *ArchiveExtractor) Extract(data []byte, multiple bool) (ExtractedFile, []ExtractedFile, error) {
 	var candidates []ExtractedFile
 
 	ar, err := a.Ar(data, a.Decompress)
@@ -159,62 +160,33 @@ func (a *ArchiveExtractor) Extract(data []byte) (ExtractedFile, []ExtractedFile,
 		if err != nil {
 			return ExtractedFile{}, nil, fmt.Errorf("extract: %w", err)
 		}
+		if f.Dir {
+			continue
+		}
 		direct, possible := a.File.Choose(f.Name, f.Mode)
 		if direct || possible {
 			name := rename(f.Name, f.Name)
 
-			var extract func(to string) error
-			if !f.Dir {
-				extract = func(to string) error {
-					data, err := f.ReadAll()
-					if err != nil {
-						return err
-					}
-					return writeFile(data, to, modeFrom(name, f.Mode))
-				}
-			} else {
-				extract = func(to string) error {
-					ar, err := a.Ar(data, a.Decompress)
-					if err != nil {
-						return err
-					}
-					for {
-						subf, err := ar.Next()
-						if err == io.EOF {
-							break
-						} else if err != nil {
-							return fmt.Errorf("extract: %w", err)
-						} else if !strings.HasPrefix(subf.Name, f.Name) {
-							continue
-						} else if subf.Dir {
-							continue
-						}
-
-						data, err := subf.ReadAll()
-						if err != nil {
-							return fmt.Errorf("extract: %w", err)
-						}
-						name = filepath.Join(to, subf.Name[len(f.Name):])
-						err = writeFile(data, name, subf.Mode)
-						if err != nil {
-							return fmt.Errorf("extract: %w", err)
-						}
-					}
-					return nil
-				}
+			data, err := ar.ReadAll()
+			if err != nil {
+				return ExtractedFile{}, nil, fmt.Errorf("extract: %w", err)
 			}
 
-			f := ExtractedFile{
+			extract := func(to string) error {
+				return writeFile(data, to, modeFrom(name, f.Mode))
+			}
+
+			ef := ExtractedFile{
 				Name:        name,
 				ArchiveName: f.Name,
 				mode:        f.Mode,
 				Extract:     extract,
 			}
-			if direct {
-				return f, nil, err
+			if direct && !multiple {
+				return ef, nil, err
 			}
 			if err == nil {
-				candidates = append(candidates, f)
+				candidates = append(candidates, ef)
 			}
 		}
 	}
@@ -234,7 +206,7 @@ type SingleFileExtractor struct {
 	Decompress func(r io.Reader) (io.Reader, error)
 }
 
-func (sf *SingleFileExtractor) Extract(data []byte) (ExtractedFile, []ExtractedFile, error) {
+func (sf *SingleFileExtractor) Extract(data []byte, multiple bool) (ExtractedFile, []ExtractedFile, error) {
 	name := rename(sf.Name, sf.Rename)
 	return ExtractedFile{
 		Name:        name,
@@ -326,4 +298,25 @@ func (lf *LiteralFileChooser) Choose(name string, mode fs.FileMode) (bool, bool)
 
 func (lf *LiteralFileChooser) String() string {
 	return fmt.Sprintf("`%s`", lf.File)
+}
+
+type GlobChooser struct {
+	expr string
+	g    *glob.Glob
+}
+
+func NewGlobChooser(gl string) (*GlobChooser, error) {
+	g, err := glob.Compile(gl)
+	return &GlobChooser{
+		g:    g,
+		expr: gl,
+	}, err
+}
+
+func (gc *GlobChooser) Choose(name string, mode fs.FileMode) (bool, bool) {
+	return false, gc.g.MatchString(filepath.Base(name)) || gc.g.MatchString(name)
+}
+
+func (gc *GlobChooser) String() string {
+	return fmt.Sprintf("`%s`", gc.expr)
 }

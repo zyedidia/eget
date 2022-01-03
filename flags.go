@@ -6,6 +6,7 @@ type Flags struct {
 	Output      string   `long:"to" description:"move to given location after extracting"`
 	System      string   `short:"s" long:"system" description:"target system to download for (use \"all\" for all choices)"`
 	ExtractFile string   `short:"f" long:"file" description:"file name to extract"`
+	All         bool     `long:"all" description:"extract all file candidates"`
 	Quiet       bool     `short:"q" long:"quiet" description:"only print essential output"`
 	DLOnly      bool     `long:"download-only" description:"stop after downloading the asset (no extraction)"`
 	Asset       []string `short:"a" long:"asset" description:"download a specific asset containing the given string; can be specified multiple times for additional filtering"`

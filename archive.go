@@ -10,17 +10,15 @@ import (
 	"strings"
 )
 
-type FullReader func() ([]byte, error)
-
 type File struct {
-	Name    string
-	Mode    fs.FileMode
-	ReadAll FullReader
-	Dir     bool
+	Name string
+	Mode fs.FileMode
+	Dir  bool
 }
 
 type Archive interface {
 	Next() (File, error)
+	ReadAll() ([]byte, error)
 }
 
 type TarArchive struct {
@@ -48,13 +46,14 @@ func (t *TarArchive) Next() (File, error) {
 			return File{
 				Name: hdr.Name,
 				Mode: fs.FileMode(hdr.Mode),
-				ReadAll: func() ([]byte, error) {
-					return io.ReadAll(t.r)
-				},
-				Dir: hdr.Typeflag == tar.TypeDir,
+				Dir:  hdr.Typeflag == tar.TypeDir,
 			}, err
 		}
 	}
+}
+
+func (t *TarArchive) ReadAll() ([]byte, error) {
+	return io.ReadAll(t.r)
 }
 
 type ZipArchive struct {
@@ -84,15 +83,17 @@ func (z *ZipArchive) Next() (File, error) {
 	return File{
 		Name: f.Name,
 		Mode: f.Mode(),
-		ReadAll: func() ([]byte, error) {
-			rc, err := f.Open()
-			if err != nil {
-				return nil, fmt.Errorf("zip extract: %w", err)
-			}
-			defer rc.Close()
-			data, err := io.ReadAll(rc)
-			return data, err
-		},
-		Dir: strings.HasSuffix(f.Name, "/"),
+		Dir:  strings.HasSuffix(f.Name, "/"),
 	}, nil
+}
+
+func (z *ZipArchive) ReadAll() ([]byte, error) {
+	f := z.r.File[z.idx]
+	rc, err := f.Open()
+	if err != nil {
+		return nil, fmt.Errorf("zip extract: %w", err)
+	}
+	defer rc.Close()
+	data, err := io.ReadAll(rc)
+	return data, err
 }

@@ -141,7 +141,7 @@ func getDetector(opts *Flags) (detector Detector, err error) {
 // extract the literal file provided by --file, or by default we just
 // extract a binary with the tool name that was possibly auto-detected
 // above.
-func getExtractor(url, tool string, opts *Flags) (extractor Extractor) {
+func getExtractor(url, tool string, opts *Flags) (extractor Extractor, err error) {
 	if opts.DLOnly {
 		extractor = &SingleFileExtractor{
 			Name:   path.Base(url),
@@ -151,15 +151,17 @@ func getExtractor(url, tool string, opts *Flags) (extractor Extractor) {
 			},
 		}
 	} else if opts.ExtractFile != "" {
-		extractor = NewExtractor(path.Base(url), tool, &LiteralFileChooser{
-			File: opts.ExtractFile,
-		})
+		gc, err := NewGlobChooser(opts.ExtractFile)
+		if err != nil {
+			return nil, err
+		}
+		extractor = NewExtractor(path.Base(url), tool, gc)
 	} else {
 		extractor = NewExtractor(path.Base(url), tool, &BinaryChooser{
 			Tool: tool,
 		})
 	}
-	return extractor
+	return extractor, nil
 }
 
 // Write an extracted file to disk with a new name.
@@ -316,11 +318,14 @@ func main() {
 		fmt.Fprintf(output, "Checksum verified\n")
 	}
 
-	extractor := getExtractor(url, tool, &opts)
+	extractor, err := getExtractor(url, tool, &opts)
+	if err != nil {
+		fatal(err)
+	}
 
 	// get extraction candidates
-	bin, bins, err := extractor.Extract(body)
-	if len(bins) != 0 && err != nil {
+	bin, bins, err := extractor.Extract(body, opts.All)
+	if len(bins) != 0 && err != nil && !opts.All {
 		// if there are multiple candidates, have the user select manually
 		fmt.Printf("%v: please select manually\n", err)
 		choices := make([]interface{}, len(bins))
@@ -329,34 +334,44 @@ func main() {
 		}
 		choice := userSelect(choices)
 		bin = bins[choice-1]
-	} else if err != nil {
+	} else if err != nil && len(bins) == 0 {
 		fatal(err)
 	}
 
-	mode := bin.Mode()
+	extract := func(bin ExtractedFile) {
+		mode := bin.Mode()
 
-	// write the extracted file to a file on disk, in the --to directory if
-	// requested
-	out := filepath.Base(bin.Name)
-	if opts.Output != "" && IsDirectory(opts.Output) {
-		out = filepath.Join(opts.Output, out)
+		// write the extracted file to a file on disk, in the --to directory if
+		// requested
+		out := filepath.Base(bin.Name)
+		if opts.Output != "" && IsDirectory(opts.Output) {
+			out = filepath.Join(opts.Output, out)
+		} else {
+			if opts.Output != "" {
+				out = opts.Output
+			}
+			// only use $EGET_BIN if all of the following are true
+			// 1. $EGET_BIN is non-empty
+			// 2. --to is not a path (not a path if no path separator is found)
+			// 3. The extracted file is executable
+			if os.Getenv("EGET_BIN") != "" && !strings.ContainsRune(out, os.PathSeparator) && mode&0111 != 0 {
+				out = filepath.Join(os.Getenv("EGET_BIN"), out)
+			}
+		}
+
+		err = bin.Extract(out)
+		if err != nil {
+			fatal(err)
+		}
+
+		fmt.Fprintf(output, "Extracted `%s` to `%s`\n", bin.ArchiveName, out)
+	}
+
+	if opts.All {
+		for _, bin := range bins {
+			extract(bin)
+		}
 	} else {
-		if opts.Output != "" {
-			out = opts.Output
-		}
-		// only use $EGET_BIN if all of the following are true
-		// 1. $EGET_BIN is non-empty
-		// 2. --to is not a path (not a path if no path separator is found)
-		// 3. The extracted file is executable
-		if os.Getenv("EGET_BIN") != "" && !strings.ContainsRune(out, os.PathSeparator) && mode&0111 != 0 {
-			out = filepath.Join(os.Getenv("EGET_BIN"), out)
-		}
+		extract(bin)
 	}
-
-	err = bin.Extract(out)
-	if err != nil {
-		fatal(err)
-	}
-
-	fmt.Fprintf(output, "Extracted `%s` to `%s`\n", bin.ArchiveName, out)
 }
