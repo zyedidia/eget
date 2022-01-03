@@ -337,6 +337,9 @@ func main() {
 	} else if err != nil && len(bins) == 0 {
 		fatal(err)
 	}
+	if len(bins) == 0 {
+		bins = []ExtractedFile{bin}
+	}
 
 	extract := func(bin ExtractedFile) {
 		mode := bin.Mode()

@@ -12,8 +12,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/gobwas/glob"
 	"github.com/ulikunitz/xz"
-	"github.com/zyedidia/glob"
 )
 
 // An Extractor reads in some archive data and extracts a particular file from
@@ -147,6 +147,7 @@ type ArchiveExtractor struct {
 
 func (a *ArchiveExtractor) Extract(data []byte, multiple bool) (ExtractedFile, []ExtractedFile, error) {
 	var candidates []ExtractedFile
+	var dirs []string
 
 	ar, err := a.Ar(data, a.Decompress)
 	if err != nil {
@@ -160,20 +161,61 @@ func (a *ArchiveExtractor) Extract(data []byte, multiple bool) (ExtractedFile, [
 		if err != nil {
 			return ExtractedFile{}, nil, fmt.Errorf("extract: %w", err)
 		}
-		if f.Dir {
+		var hasdir bool
+		for _, d := range dirs {
+			if strings.HasPrefix(f.Name, d) {
+				hasdir = true
+				break
+			}
+		}
+		if hasdir {
 			continue
 		}
 		direct, possible := a.File.Choose(f.Name, f.Mode)
 		if direct || possible {
 			name := rename(f.Name, f.Name)
 
-			data, err := ar.ReadAll()
+			fdata, err := ar.ReadAll()
 			if err != nil {
 				return ExtractedFile{}, nil, fmt.Errorf("extract: %w", err)
 			}
 
-			extract := func(to string) error {
-				return writeFile(data, to, modeFrom(name, f.Mode))
+			var extract func(to string) error
+			if !f.Dir {
+				extract = func(to string) error {
+					return writeFile(fdata, to, modeFrom(name, f.Mode))
+				}
+			} else {
+				dirs = append(dirs, f.Name)
+				extract = func(to string) error {
+					ar, err := a.Ar(data, a.Decompress)
+					if err != nil {
+						return err
+					}
+					for {
+						subf, err := ar.Next()
+						if err == io.EOF {
+							break
+						} else if err != nil {
+							return fmt.Errorf("extract: %w", err)
+						} else if !strings.HasPrefix(subf.Name, f.Name) {
+							continue
+						} else if subf.Dir {
+							continue
+						}
+
+						fdata, err := ar.ReadAll()
+						if err != nil {
+							return fmt.Errorf("extract: %w", err)
+						}
+						name = filepath.Join(to, subf.Name[len(f.Name):])
+						err = writeFile(fdata, name, subf.Mode)
+						if err != nil {
+							return fmt.Errorf("extract: %w", err)
+						}
+					}
+					return nil
+				}
 			}
 
 			ef := ExtractedFile{
@@ -302,11 +344,11 @@ func (lf *LiteralFileChooser) String() string {
 
 type GlobChooser struct {
 	expr string
-	g    *glob.Glob
+	g    glob.Glob
 }
 
 func NewGlobChooser(gl string) (*GlobChooser, error) {
-	g, err := glob.Compile(gl)
+	g, err := glob.Compile(gl, '/')
 	return &GlobChooser{
 		g:    g,
 		expr: gl,
@@ -314,7 +356,10 @@ func NewGlobChooser(gl string) (*GlobChooser, error) {
 }
 
 func (gc *GlobChooser) Choose(name string, mode fs.FileMode) (bool, bool) {
-	return false, gc.g.MatchString(filepath.Base(name)) || gc.g.MatchString(name)
+	if len(name) > 0 && name[len(name)-1] == '/' {
+		name = name[:len(name)-1]
+	}
+	return false, gc.g.Match(filepath.Base(name)) || gc.g.Match(name)
 }
 
 func (gc *GlobChooser) String() string {
