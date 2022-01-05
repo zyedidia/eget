@@ -68,17 +68,18 @@ func NewZipArchive(data []byte, d DecompFn) (Archive, error) {
 	zr, err := zip.NewReader(r, int64(len(data)))
 	return &ZipArchive{
 		r:   zr,
-		idx: 0,
+		idx: -1,
 	}, err
 }
 
 func (z *ZipArchive) Next() (File, error) {
+	z.idx++
+
 	if z.idx < 0 || z.idx >= len(z.r.File) {
 		return File{}, io.EOF
 	}
 
 	f := z.r.File[z.idx]
-	z.idx++
 
 	return File{
 		Name: f.Name,
@@ -88,6 +89,9 @@ func (z *ZipArchive) Next() (File, error) {
 }
 
 func (z *ZipArchive) ReadAll() ([]byte, error) {
+	if z.idx < 0 || z.idx >= len(z.r.File) {
+		return nil, io.EOF
+	}
 	f := z.r.File[z.idx]
 	rc, err := f.Open()
 	if err != nil {
