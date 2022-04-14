@@ -185,11 +185,11 @@ func writeFile(data []byte, rename string, mode fs.FileMode) error {
 // selection.
 func userSelect(choices []interface{}) int {
 	for i, c := range choices {
-		fmt.Printf("(%d) %v\n", i+1, c)
+		fmt.Fprintf(os.Stderr, "(%d) %v\n", i+1, c)
 	}
 	var choice int
 	for {
-		fmt.Print("Enter selection number: ")
+		fmt.Fprint(os.Stderr, "Enter selection number: ")
 		_, err := fmt.Scanf("%d", &choice)
 		if err == nil && (choice <= 0 || choice > len(choices)) {
 			err = fmt.Errorf("%d is out of bounds", choice)
@@ -197,7 +197,7 @@ func userSelect(choices []interface{}) int {
 		if err == nil {
 			break
 		}
-		fmt.Printf("Invalid selection: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Invalid selection: %v\n", err)
 	}
 	return choice
 }
@@ -237,7 +237,7 @@ func main() {
 	}
 
 	// when --quiet is passed, send non-essential output to io.Discard
-	var output io.Writer = os.Stdout
+	var output io.Writer = os.Stderr
 	if opts.Quiet {
 		output = io.Discard
 	}
@@ -257,7 +257,7 @@ func main() {
 	url, candidates, err := detector.Detect(assets)
 	if len(candidates) != 0 && err != nil {
 		// if multiple candidates are returned, the user must select manually which one to download
-		fmt.Printf("%v: please select manually\n", err)
+		fmt.Fprintf(os.Stderr, "%v: please select manually\n", err)
 		choices := make([]interface{}, len(candidates))
 		for i := range candidates {
 			choices[i] = path.Base(candidates[i])
@@ -327,7 +327,7 @@ func main() {
 	bin, bins, err := extractor.Extract(body, opts.All)
 	if len(bins) != 0 && err != nil && !opts.All {
 		// if there are multiple candidates, have the user select manually
-		fmt.Printf("%v: please select manually\n", err)
+		fmt.Fprintf(os.Stderr, "%v: please select manually\n", err)
 		choices := make([]interface{}, len(bins)+1)
 		for i := range bins {
 			choices[i] = bins[i]
