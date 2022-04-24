@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"time"
@@ -26,6 +27,21 @@ func fatal(a ...interface{}) {
 func IsUrl(s string) bool {
 	u, err := url.Parse(s)
 	return err == nil && u.Scheme != "" && u.Host != ""
+}
+
+// Cut is strings.Cut
+func Cut(s, sep string) (before, after string, found bool) {
+	if i := strings.Index(s, sep); i >= 0 {
+		return s[:i], s[i+len(sep):], true
+	}
+	return s, "", false
+}
+
+var ghrgx = regexp.MustCompile(`^(http(s)?://)?github\.com/\w+/\w+$`)
+
+// IsGithubUrl returns true if s is a URL with github.com as the host.
+func IsGithubUrl(s string) bool {
+	return ghrgx.MatchString(s)
 }
 
 func IsLocalFile(s string) bool {
@@ -58,12 +74,21 @@ func checksumAsset(asset string, assets []string) string {
 // repo is provided, we assume the repo name is the 'tool' name (for direct
 // URLs, the tool name is unknown and remains empty).
 func getFinder(project string, opts *Flags) (finder Finder, tool string) {
-	if IsLocalFile(project) || IsUrl(project) {
+	if IsLocalFile(project) || (IsUrl(project) && !IsGithubUrl(project)) {
 		finder = &DirectAssetFinder{
 			URL: project,
 		}
 		opts.System = "all"
 	} else {
+		if IsGithubUrl(project) {
+			_, after, found := Cut(project, "github.com/")
+			if found {
+				project = after
+			} else {
+				fatal(fmt.Sprintf("invalid GitHub repo URL %s", project))
+			}
+		}
+
 		repo := project
 		if strings.Count(repo, "/") != 1 {
 			fatal("invalid argument (must be of the form `user/repo`)")
