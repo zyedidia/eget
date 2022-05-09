@@ -39,7 +39,7 @@ eget BurntSushi/ripgrep
 eget -f eget.1 zyedidia/eget
 eget zachjs/sv2v
 eget https://go.dev/dl/go1.17.5.linux-amd64.tar.gz --file go --to ~/go1.17.5
-eget --all --file * ActivityWatch/activitywatch
+eget --all --file '*' ActivityWatch/activitywatch
 ```
 
 # How to get Eget
