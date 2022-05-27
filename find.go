@@ -2,9 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 )
 
 // A Finder returns a list of URLs making up a project's assets.
@@ -18,8 +20,9 @@ type GithubRelease struct {
 		DownloadURL string `json:"browser_download_url"`
 	} `json:"assets"`
 
-	Prerelease bool   `json:"prerelease"`
-	Tag        string `json:"tag_name"`
+	Prerelease bool      `json:"prerelease"`
+	Tag        string    `json:"tag_name"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 type GithubError struct {
@@ -49,7 +52,10 @@ type GithubAssetFinder struct {
 	Repo       string
 	Tag        string
 	Prerelease bool
+	MinTime    time.Time // release must be after MinTime to be found
 }
+
+var ErrNoUpgrade = errors.New("requested release is not more recent than current version")
 
 func (f *GithubAssetFinder) Find() ([]string, error) {
 	if f.Prerelease && f.Tag == "latest" {
@@ -92,6 +98,10 @@ func (f *GithubAssetFinder) Find() ([]string, error) {
 	err = json.Unmarshal(body, &release)
 	if err != nil {
 		return nil, err
+	}
+
+	if release.CreatedAt.Before(f.MinTime) {
+		return nil, ErrNoUpgrade
 	}
 
 	// accumulate all assets from the json into a slice

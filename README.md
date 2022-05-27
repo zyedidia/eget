@@ -132,6 +132,8 @@ Application Options:
       --all            extract all candidate files
   -q, --quiet          only print essential output
       --download-only  stop after downloading the asset (no extraction)
+      --upgrade-only   only download if release is more recent than current
+                       version
   -a, --asset=         download a specific asset containing the given string; can be specified multiple times for additional
                        filtering
       --sha256         show the SHA-256 hash of the downloaded asset

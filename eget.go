@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -104,10 +105,18 @@ func getFinder(project string, opts *Flags) (finder Finder, tool string) {
 			tag = fmt.Sprintf("tags/%s", opts.Tag)
 		}
 
+		var mint time.Time
+		if opts.UpgradeOnly {
+			parts := strings.Split(project, "/")
+			last := parts[len(parts)-1]
+			mint = bintime(last)
+		}
+
 		finder = &GithubAssetFinder{
 			Repo:       repo,
 			Tag:        tag,
 			Prerelease: opts.Prerelease,
+			MinTime:    mint,
 		}
 	}
 	return finder, tool
@@ -227,6 +236,18 @@ func userSelect(choices []interface{}) int {
 	return choice
 }
 
+func bintime(bin string) (t time.Time) {
+	dir := "."
+	if ebin := os.Getenv("EGET_BIN"); ebin != "" {
+		dir = ebin
+	}
+	fi, err := os.Stat(filepath.Join(dir, bin))
+	if err != nil {
+		return
+	}
+	return fi.ModTime()
+}
+
 func main() {
 	var opts Flags
 	flagparser := flags.NewParser(&opts, flags.PassDoubleDash|flags.PrintErrors)
@@ -270,6 +291,10 @@ func main() {
 	finder, tool := getFinder(args[0], &opts)
 	assets, err := finder.Find()
 	if err != nil {
+		if errors.Is(err, ErrNoUpgrade) {
+			fmt.Fprintf(output, "%v\n", err)
+			os.Exit(0)
+		}
 		fatal(err)
 	}
 

@@ -83,6 +83,10 @@ header: Eget Manual
 
 :    Stop after downloading the asset. This prevents Eget from performing extraction, allowing you to perform manual installation after the asset is downloaded.
 
+   --upgrade-only
+
+:    Only download the asset if the release is more recent than an existing asset with the same name in `$EGET_BIN`, or the current directory if `$EGET_BIN` is not defined.
+
   `-a, --asset=`
 
 :    Download a specific asset containing the given string. If there is an exact match with an asset, that asset is used regardless. This option can be specified multiple times for additional filtering. Example: **`eget --asset nvim.appimage neovim/neovim`**. Example **`eget --download-only --asset amd64.deb --asset musl sharkdp/bat`**.
