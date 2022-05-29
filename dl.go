@@ -19,7 +19,8 @@ func Get(url string) (*http.Response, error) {
 	if req.URL.Scheme == "https" && req.Host == "api.github.com" && os.Getenv("GITHUB_TOKEN") != "" {
 		req.Header.Set("Authorization", fmt.Sprintf("token %s", os.Getenv("GITHUB_TOKEN")))
 	}
-	return http.DefaultClient.Do(req)
+	proxyClient := &http.Client{Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+	return proxyClient.Do(req)
 }
 
 type RateLimitJson struct {
