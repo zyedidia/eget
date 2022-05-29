@@ -237,13 +237,27 @@ func userSelect(choices []interface{}) int {
 }
 
 func bintime(bin string, to string) (t time.Time) {
+	file := ""
 	dir := "."
 	if to != "" && IsDirectory(to) {
+		// direct directory
 		dir = to
 	} else if ebin := os.Getenv("EGET_BIN"); ebin != "" {
 		dir = ebin
 	}
-	fi, err := os.Stat(filepath.Join(dir, bin))
+
+	if to != "" && !strings.ContainsRune(to, os.PathSeparator) {
+		// path joined possible with eget bin
+		bin = to
+	} else if to != "" && !IsDirectory(to) {
+		// direct path
+		file = to
+	}
+
+	if file == "" {
+		file = filepath.Join(dir, bin)
+	}
+	fi, err := os.Stat(file)
 	if err != nil {
 		return
 	}
