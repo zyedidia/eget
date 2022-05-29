@@ -37,12 +37,16 @@ func (dc *DetectorChain) Detect(assets []string) (string, []string, error) {
 type OS struct {
 	name     string
 	regex    *regexp.Regexp
+	anti     *regexp.Regexp
 	priority *regexp.Regexp // matches to priority are better than normal matches
 }
 
 // Match returns true if the given archive name is likely to store a binary for
 // this OS. Also returns if this is a priority match.
 func (os *OS) Match(s string) (bool, bool) {
+	if os.anti != nil && os.anti.MatchString(s) {
+		return false, false
+	}
 	if os.priority != nil {
 		return os.regex.MatchString(s), os.priority.MatchString(s)
 	}
@@ -61,6 +65,7 @@ var (
 	OSLinux = OS{
 		name:     "linux",
 		regex:    regexp.MustCompile(`(?i)(linux)`),
+		anti:     regexp.MustCompile(`(?i)(android)`),
 		priority: regexp.MustCompile(`\.appimage$`),
 	}
 	OSNetBSD = OS{
