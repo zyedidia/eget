@@ -10,6 +10,7 @@ type Flags struct {
 	Quiet       bool     `short:"q" long:"quiet" description:"only print essential output"`
 	DLOnly      bool     `short:"d" long:"download-only" description:"stop after downloading the asset (no extraction)"`
 	UpgradeOnly bool     `long:"upgrade-only" description:"only download if release is more recent than current version"`
+	BinaryName  string   `short:"b" long:"binary" description:"binary name of current version"`
 	Asset       []string `short:"a" long:"asset" description:"download a specific asset containing the given string; can be specified multiple times for additional filtering; use ^ for anti-match"`
 	Hash        bool     `long:"sha256" description:"show the SHA-256 hash of the downloaded asset"`
 	Verify      string   `long:"verify-sha256" description:"verify the downloaded asset checksum against the one provided"`

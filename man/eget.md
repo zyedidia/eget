@@ -87,6 +87,10 @@ header: Eget Manual
 
 :    Only download the asset if the release is more recent than an existing asset with the same name in `$EGET_BIN`, or the current directory if `$EGET_BIN` is not defined.
 
+  `-b, --binary=`
+
+:    Specify asset binary name present in `$EGET_BIN` or current directory. Used with `--upgrade-only` when repo name differs from the binary name.
+
   `-a, --asset=`
 
 :    Download a specific asset containing the given string. If there is an exact match with an asset, that asset is used regardless (except when using `^`). If the argument begins with a `^`, then any asset that does not match the argument is a candidate. This option can be specified multiple times for additional filtering. Example: **`eget --asset nvim.appimage neovim/neovim`**. Example **`eget --download-only --asset amd64.deb --asset musl sharkdp/bat`**. If the assets are filterable using the `--system` detector (i.e., if applying the detector does not remove all candidates), the system detector is applied. Use `--system all` to always consider all assets.

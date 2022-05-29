@@ -107,9 +107,12 @@ func getFinder(project string, opts *Flags) (finder Finder, tool string) {
 
 		var mint time.Time
 		if opts.UpgradeOnly {
-			parts := strings.Split(project, "/")
-			last := parts[len(parts)-1]
-			mint = bintime(last, opts.Output)
+			bin := opts.BinaryName
+			if bin == "" {
+				parts := strings.Split(project, "/")
+				bin = parts[len(parts)-1]
+			}
+			mint = bintime(bin, opts.Output)
 		}
 
 		finder = &GithubAssetFinder{
