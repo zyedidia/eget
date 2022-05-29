@@ -93,7 +93,7 @@ func NewExtractor(filename string, tool string, chooser Chooser) Extractor {
 			Ar:         NewTarArchive,
 			Decompress: b2unzipper,
 		}
-	case strings.HasSuffix(filename, ".tar.xz"), strings.HasSuffix(filename, ".tbz"):
+	case strings.HasSuffix(filename, ".tar.xz"), strings.HasSuffix(filename, ".txz"):
 		return &ArchiveExtractor{
 			File:       chooser,
 			Ar:         NewTarArchive,
