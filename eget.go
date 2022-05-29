@@ -109,7 +109,7 @@ func getFinder(project string, opts *Flags) (finder Finder, tool string) {
 		if opts.UpgradeOnly {
 			parts := strings.Split(project, "/")
 			last := parts[len(parts)-1]
-			mint = bintime(last)
+			mint = bintime(last, opts.Output)
 		}
 
 		finder = &GithubAssetFinder{
@@ -236,9 +236,11 @@ func userSelect(choices []interface{}) int {
 	return choice
 }
 
-func bintime(bin string) (t time.Time) {
+func bintime(bin string, to string) (t time.Time) {
 	dir := "."
-	if ebin := os.Getenv("EGET_BIN"); ebin != "" {
+	if to != "" && IsDirectory(to) {
+		dir = to
+	} else if ebin := os.Getenv("EGET_BIN"); ebin != "" {
 		dir = ebin
 	}
 	fi, err := os.Stat(filepath.Join(dir, bin))
