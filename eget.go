@@ -38,7 +38,7 @@ func Cut(s, sep string) (before, after string, found bool) {
 	return s, "", false
 }
 
-var ghrgx = regexp.MustCompile(`^(http(s)?://)?github\.com/\w+/\w+$`)
+var ghrgx = regexp.MustCompile(`^(http(s)?://)?github\.com/[\w,\-,_]+/[\w,\-,_]+(.git)?(/)?$`)
 
 // IsGithubUrl returns true if s is a URL with github.com as the host.
 func IsGithubUrl(s string) bool {
