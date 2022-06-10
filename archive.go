@@ -10,10 +10,39 @@ import (
 	"strings"
 )
 
+type FileType byte
+
+const (
+	TypeNormal FileType = iota
+	TypeDir
+	TypeLink
+	TypeSymlink
+	TypeOther
+)
+
+func tarft(typ byte) FileType {
+	switch typ {
+	case tar.TypeReg:
+		return TypeNormal
+	case tar.TypeDir:
+		return TypeDir
+	case tar.TypeLink:
+		return TypeLink
+	case tar.TypeSymlink:
+		return TypeSymlink
+	}
+	return TypeOther
+}
+
 type File struct {
-	Name string
-	Mode fs.FileMode
-	Dir  bool
+	Name     string
+	LinkName string
+	Mode     fs.FileMode
+	Type     FileType
+}
+
+func (f File) Dir() bool {
+	return f.Type == TypeDir
 }
 
 type Archive interface {
@@ -42,11 +71,13 @@ func (t *TarArchive) Next() (File, error) {
 		if err != nil {
 			return File{}, err
 		}
-		if hdr.Typeflag == tar.TypeReg || hdr.Typeflag == tar.TypeDir {
+		ft := tarft(hdr.Typeflag)
+		if ft != TypeOther {
 			return File{
-				Name: hdr.Name,
-				Mode: fs.FileMode(hdr.Mode),
-				Dir:  hdr.Typeflag == tar.TypeDir,
+				Name:     hdr.Name,
+				LinkName: hdr.Linkname,
+				Mode:     fs.FileMode(hdr.Mode),
+				Type:     ft,
 			}, err
 		}
 	}
@@ -81,10 +112,15 @@ func (z *ZipArchive) Next() (File, error) {
 
 	f := z.r.File[z.idx]
 
+	typ := TypeNormal
+	if strings.HasSuffix(f.Name, "/") {
+		typ = TypeDir
+	}
+
 	return File{
 		Name: f.Name,
 		Mode: f.Mode(),
-		Dir:  strings.HasSuffix(f.Name, "/"),
+		Type: typ,
 	}, nil
 }
 

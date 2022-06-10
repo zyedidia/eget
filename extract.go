@@ -146,6 +146,19 @@ type ArchiveExtractor struct {
 	Decompress DecompFn
 }
 
+type link struct {
+	newname string
+	oldname string
+	sym     bool
+}
+
+func (l link) Write() error {
+	if l.sym {
+		return os.Symlink(l.oldname, l.newname)
+	}
+	return os.Link(l.oldname, l.newname)
+}
+
 func (a *ArchiveExtractor) Extract(data []byte, multiple bool) (ExtractedFile, []ExtractedFile, error) {
 	var candidates []ExtractedFile
 	var dirs []string
@@ -172,7 +185,7 @@ func (a *ArchiveExtractor) Extract(data []byte, multiple bool) (ExtractedFile, [
 		if hasdir {
 			continue
 		}
-		direct, possible := a.File.Choose(f.Name, f.Dir, f.Mode)
+		direct, possible := a.File.Choose(f.Name, f.Dir(), f.Mode)
 		if direct || possible {
 			name := rename(f.Name, f.Name)
 
@@ -182,7 +195,7 @@ func (a *ArchiveExtractor) Extract(data []byte, multiple bool) (ExtractedFile, [
 			}
 
 			var extract func(to string) error
-			if !f.Dir {
+			if !f.Dir() {
 				extract = func(to string) error {
 					return writeFile(fdata, to, modeFrom(name, f.Mode))
 				}
@@ -193,6 +206,7 @@ func (a *ArchiveExtractor) Extract(data []byte, multiple bool) (ExtractedFile, [
 					if err != nil {
 						return err
 					}
+					var links []link
 					for {
 						subf, err := ar.Next()
 						if err == io.EOF {
@@ -201,7 +215,16 @@ func (a *ArchiveExtractor) Extract(data []byte, multiple bool) (ExtractedFile, [
 							return fmt.Errorf("extract: %w", err)
 						} else if !strings.HasPrefix(subf.Name, f.Name) {
 							continue
-						} else if subf.Dir {
+						} else if subf.Dir() {
+							continue
+						} else if subf.Type == TypeLink || subf.Type == TypeSymlink {
+							newname := filepath.Join(to, subf.Name[len(f.Name):])
+							oldname := subf.LinkName
+							links = append(links, link{
+								newname: newname,
+								oldname: oldname,
+								sym:     subf.Type == TypeSymlink,
+							})
 							continue
 						}
 
@@ -215,6 +238,11 @@ func (a *ArchiveExtractor) Extract(data []byte, multiple bool) (ExtractedFile, [
 							return fmt.Errorf("extract: %w", err)
 						}
 					}
+					for _, l := range links {
+						if err := l.Write(); err != nil && err != os.ErrExist {
+							return fmt.Errorf("extract: %w", err)
+						}
+					}
 					return nil
 				}
 			}
@@ -224,7 +252,7 @@ func (a *ArchiveExtractor) Extract(data []byte, multiple bool) (ExtractedFile, [
 				ArchiveName: f.Name,
 				mode:        f.Mode,
 				Extract:     extract,
-				Dir:         f.Dir,
+				Dir:         f.Dir(),
 			}
 			if direct && !multiple {
 				return ef, nil, err
