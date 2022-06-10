@@ -66,6 +66,12 @@ To verify the script, the sha256 checksum is `0e64b8a3c13f531da005096cc364ac7783
 
 One of the reasons to use eget is to avoid running curl into bash, but unfortunately you can't eget eget until you have eget.
 
+### Homebrew
+
+```
+brew install eget
+```
+
 ### Pre-built binaries
 
 Pre-built binaries are available on the [releases](https://github.com/zyedidia/eget/releases) page.
