@@ -8,7 +8,7 @@ header: Eget Manual
   eget - easily install prebuilt binaries from GitHub
 
 # SYNOPSIS
-  eget `[--version] [--help] [OPTIONS] PROJECT`
+  eget `[--version] [--help] [OPTIONS] TARGET`
 
 # DESCRIPTION
   Eget is a tool for downloading and extracting prebuilt binaries from releases
@@ -102,6 +102,10 @@ header: Eget Manual
   `--rate`
 
 :    Show GitHub API rate limiting information.
+
+  `--remove`
+
+:    Remove the target file from `$EGET_BIN` (or the current directory if unset). Note that this flag is boolean, and means eget will treat `TARGET` as a file to be removed.
 
   `-v, --version`
 

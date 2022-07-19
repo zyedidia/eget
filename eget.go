@@ -267,7 +267,7 @@ func bintime(bin string, to string) (t time.Time) {
 func main() {
 	var opts Flags
 	flagparser := flags.NewParser(&opts, flags.PassDoubleDash|flags.PrintErrors)
-	flagparser.Usage = "[OPTIONS] PROJECT"
+	flagparser.Usage = "[OPTIONS] TARGET"
 	args, err := flagparser.Parse()
 	if err != nil {
 		os.Exit(1)
@@ -298,13 +298,25 @@ func main() {
 		os.Exit(0)
 	}
 
+	target := args[0]
+	if opts.Remove {
+		ebin := os.Getenv("EGET_BIN")
+		err := os.Remove(filepath.Join(ebin, target))
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		fmt.Printf("Removed `%s`\n", filepath.Join(ebin, target))
+		os.Exit(0)
+	}
+
 	// when --quiet is passed, send non-essential output to io.Discard
 	var output io.Writer = os.Stderr
 	if opts.Quiet {
 		output = io.Discard
 	}
 
-	finder, tool := getFinder(args[0], &opts)
+	finder, tool := getFinder(target, &opts)
 	assets, err := finder.Find()
 	if err != nil {
 		if errors.Is(err, ErrNoUpgrade) {
