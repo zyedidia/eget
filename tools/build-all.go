@@ -1,3 +1,4 @@
+//go:build ignore
 // +build ignore
 
 package main
@@ -29,11 +30,11 @@ func main() {
 		{"darwin", "amd64"},
 		{"darwin", "arm64"},
 		{"freebsd", "amd64"},
-		{"freebsd", "arm64"},
 		{"linux", "amd64"},
 		{"linux", "386"},
 		{"linux", "arm64"},
 		{"linux", "arm"},
+		{"openbsd", "amd64"},
 		{"windows", "amd64"},
 		{"windows", "386"},
 	}
