@@ -33,7 +33,7 @@ eget zyedidia/micro --tag nightly
 eget jgm/pandoc --to /usr/local/bin
 eget junegunn/fzf
 eget neovim/neovim
-eget ogham/exa
+eget ogham/exa --asset ^musl
 eget --system darwin/amd64 sharkdp/fd
 eget BurntSushi/ripgrep
 eget -f eget.1 zyedidia/eget
@@ -139,7 +139,8 @@ Application Options:
   -q, --quiet          only print essential output
   -d, --download-only  stop after downloading the asset (no extraction)
       --upgrade-only   only download if release is more recent than current version
-  -a, --asset=         download a specific asset containing the given string; can be specified multiple times for additional filtering
+  -a, --asset=         download a specific asset containing the given string; can be specified
+                       multiple times for additional filtering; use ^ for anti-match
       --sha256         show the SHA-256 hash of the downloaded asset
       --verify-sha256= verify the downloaded asset checksum against the one provided
       --rate           show GitHub API rate limiting information
@@ -201,6 +202,6 @@ However, here are some rules that will guarantee compatibility with Eget.
 # Contributing
 
 If you find a bug, have a suggestion, or something else, please open an issue
-for discussion. Pull requests will only be accepted if they close an issue
-marked as "pr-approved". See [DOCS.md](DOCS.md) for more in-depth
-documentation.
+for discussion. I am sometimes prone to leaving pull requests unmerged, so
+please double check with me before investing lots of time into implementing a
+pull request. See [DOCS.md](DOCS.md) for more in-depth documentation.

@@ -177,18 +177,23 @@ func (a *AllDetector) Detect(assets []string) (string, []string, error) {
 	return "", assets, fmt.Errorf("%d matches found", len(assets))
 }
 
-// SingleAssetDetector finds a single named asset.
+// SingleAssetDetector finds a single named asset. If Anti is true it finds all
+// assets that don't contain Asset.
 type SingleAssetDetector struct {
 	Asset string
+	Anti  bool
 }
 
 func (s *SingleAssetDetector) Detect(assets []string) (string, []string, error) {
 	var candidates []string
 	for _, a := range assets {
-		if path.Base(a) == s.Asset {
+		if !s.Anti && path.Base(a) == s.Asset {
 			return a, nil, nil
 		}
-		if strings.Contains(path.Base(a), s.Asset) {
+		if !s.Anti && strings.Contains(path.Base(a), s.Asset) {
+			candidates = append(candidates, a)
+		}
+		if s.Anti && !strings.Contains(path.Base(a), s.Asset) {
 			candidates = append(candidates, a)
 		}
 	}

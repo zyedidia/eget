@@ -158,8 +158,13 @@ func getDetector(opts *Flags) (detector Detector, err error) {
 	if len(opts.Asset) >= 1 {
 		detectors := make([]Detector, len(opts.Asset))
 		for i, a := range opts.Asset {
+			anti := strings.HasPrefix(a, "^")
+			if anti {
+				a = a[1:]
+			}
 			detectors[i] = &SingleAssetDetector{
 				Asset: a,
+				Anti:  anti,
 			}
 		}
 		detector = &DetectorChain{
