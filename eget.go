@@ -142,11 +142,20 @@ func getVerifier(sumAsset string, opts *Flags) (verifier Verifier, err error) {
 // --system pair provided by the user, or the runtime.GOOS/runtime.GOARCH
 // pair by default (the host system OS/Arch pair).
 func getDetector(opts *Flags) (detector Detector, err error) {
-	if len(opts.Asset) == 1 {
-		detector = &SingleAssetDetector{
-			Asset: opts.Asset[0],
+	var system Detector
+	if opts.System == "all" {
+		system = &AllDetector{}
+	} else if opts.System != "" {
+		split := strings.Split(opts.System, "/")
+		if len(split) < 2 {
+			fatal("system descriptor must be os/arch")
 		}
-	} else if len(opts.Asset) > 1 {
+		system, err = NewSystemDetector(split[0], split[1])
+	} else {
+		system, err = NewSystemDetector(runtime.GOOS, runtime.GOARCH)
+	}
+
+	if len(opts.Asset) >= 1 {
 		detectors := make([]Detector, len(opts.Asset))
 		for i, a := range opts.Asset {
 			detectors[i] = &SingleAssetDetector{
@@ -155,17 +164,10 @@ func getDetector(opts *Flags) (detector Detector, err error) {
 		}
 		detector = &DetectorChain{
 			detectors: detectors,
+			system:    system,
 		}
-	} else if opts.System == "all" {
-		detector = &AllDetector{}
-	} else if opts.System != "" {
-		split := strings.Split(opts.System, "/")
-		if len(split) < 2 {
-			fatal("system descriptor must be os/arch")
-		}
-		detector, err = NewSystemDetector(split[0], split[1])
 	} else {
-		detector, err = NewSystemDetector(runtime.GOOS, runtime.GOARCH)
+		detector = system
 	}
 	return detector, err
 }

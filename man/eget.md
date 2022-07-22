@@ -89,7 +89,7 @@ header: Eget Manual
 
   `-a, --asset=`
 
-:    Download a specific asset containing the given string. If there is an exact match with an asset, that asset is used regardless. This option can be specified multiple times for additional filtering. Example: **`eget --asset nvim.appimage neovim/neovim`**. Example **`eget --download-only --asset amd64.deb --asset musl sharkdp/bat`**.
+:    Download a specific asset containing the given string. If there is an exact match with an asset, that asset is used regardless. This option can be specified multiple times for additional filtering. Example: **`eget --asset nvim.appimage neovim/neovim`**. Example **`eget --download-only --asset amd64.deb --asset musl sharkdp/bat`**. If the assets are filterable using the `--system` detector (i.e., if applying the detector does not remove all candidates), the system detector is applied. Use `--system all` to always consider all assets.
 
   `--sha256`
 

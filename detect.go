@@ -17,6 +17,7 @@ type Detector interface {
 
 type DetectorChain struct {
 	detectors []Detector
+	system    Detector
 }
 
 func (dc *DetectorChain) Detect(assets []string) (string, []string, error) {
@@ -29,6 +30,14 @@ func (dc *DetectorChain) Detect(assets []string) (string, []string, error) {
 		} else {
 			assets = candidates
 		}
+	}
+	choice, candidates, err := dc.system.Detect(assets)
+	if len(candidates) == 0 && err != nil {
+		return "", nil, err
+	} else if len(candidates) == 0 {
+		return choice, nil, nil
+	} else if len(candidates) >= 1 {
+		assets = candidates
 	}
 	return "", assets, fmt.Errorf("%d candidates found for asset chain", len(assets))
 }
