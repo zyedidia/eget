@@ -3,6 +3,7 @@ package main
 type Flags struct {
 	Tag         string   `short:"t" long:"tag" description:"tagged release to use instead of latest"`
 	Prerelease  bool     `long:"pre-release" description:"include pre-releases when fetching the latest version"`
+	Source      bool     `long:"source" description:"download the source code for the target repo instead of a release"`
 	Output      string   `long:"to" description:"move to given location after extracting"`
 	System      string   `short:"s" long:"system" description:"target system to download for (use \"all\" for all choices)"`
 	ExtractFile string   `short:"f" long:"file" description:"glob to select files for extraction"`

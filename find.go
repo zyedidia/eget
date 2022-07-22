@@ -147,3 +147,13 @@ type DirectAssetFinder struct {
 func (f *DirectAssetFinder) Find() ([]string, error) {
 	return []string{f.URL}, nil
 }
+
+type GithubSourceFinder struct {
+	Tool string
+	Repo string
+	Tag  string
+}
+
+func (f *GithubSourceFinder) Find() ([]string, error) {
+	return []string{fmt.Sprintf("https://github.com/%s/tarball/%s/%s.tar.gz", f.Repo, f.Tag, f.Tool)}, nil
+}

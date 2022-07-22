@@ -59,6 +59,10 @@ header: Eget Manual
 
 :    Include pre-releases when fetching the latest version. This will get the latest overall release, even if it is a pre-release.
 
+  `--source`
+
+:    Download the source code for the repository (only works for GitHub repositories) rather than a release. Downloads from the "master" branch by default. Use `--tag` to download a different tag or branch.
+
   `--to=`
 
 :    Move the executable to the given name after extraction. Example: **`eget zyedidia/micro --to /usr/local/bin`**. Example: **`eget --asset nvim.appimage --to nvim neovim/neovim`**.

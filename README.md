@@ -132,6 +132,7 @@ Usage:
 Application Options:
   -t, --tag=           tagged release to use instead of latest
       --pre-release    include pre-releases when fetching the latest version
+      --source         download the source code for the target repo instead of a release
       --to=            move to given location after extracting
   -s, --system=        target system to download for (use "all" for all choices)
   -f, --file=          glob to select files for extraction

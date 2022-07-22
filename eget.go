@@ -100,23 +100,35 @@ func getFinder(project string, opts *Flags) (finder Finder, tool string) {
 		}
 		tool = parts[1]
 
-		tag := "latest"
-		if opts.Tag != "" {
-			tag = fmt.Sprintf("tags/%s", opts.Tag)
-		}
+		if opts.Source {
+			tag := "master"
+			if opts.Tag != "" {
+				tag = opts.Tag
+			}
+			finder = &GithubSourceFinder{
+				Repo: repo,
+				Tag:  tag,
+				Tool: tool,
+			}
+		} else {
+			tag := "latest"
+			if opts.Tag != "" {
+				tag = fmt.Sprintf("tags/%s", opts.Tag)
+			}
 
-		var mint time.Time
-		if opts.UpgradeOnly {
-			parts := strings.Split(project, "/")
-			last := parts[len(parts)-1]
-			mint = bintime(last, opts.Output)
-		}
+			var mint time.Time
+			if opts.UpgradeOnly {
+				parts := strings.Split(project, "/")
+				last := parts[len(parts)-1]
+				mint = bintime(last, opts.Output)
+			}
 
-		finder = &GithubAssetFinder{
-			Repo:       repo,
-			Tag:        tag,
-			Prerelease: opts.Prerelease,
-			MinTime:    mint,
+			finder = &GithubAssetFinder{
+				Repo:       repo,
+				Tag:        tag,
+				Prerelease: opts.Prerelease,
+				MinTime:    mint,
+			}
 		}
 	}
 	return finder, tool
