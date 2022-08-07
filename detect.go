@@ -73,7 +73,7 @@ var (
 	}
 	OSLinux = OS{
 		name:     "linux",
-		regex:    regexp.MustCompile(`(?i)(linux)`),
+		regex:    regexp.MustCompile(`(?i)(linux|ubuntu)`),
 		anti:     regexp.MustCompile(`(?i)(android)`),
 		priority: regexp.MustCompile(`\.appimage$`),
 	}
