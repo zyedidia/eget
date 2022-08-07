@@ -65,7 +65,7 @@ header: Eget Manual
 
   `--to=`
 
-:    Move the executable to the given name after extraction. Example: **`eget zyedidia/micro --to /usr/local/bin`**. Example: **`eget --asset nvim.appimage --to nvim neovim/neovim`**.
+:    Move the executable to the given name after extraction. If the name is `-`, it the data will be written to stdout. Example: **`eget zyedidia/micro --to /usr/local/bin`**. Example: **`eget --asset nvim.appimage --to nvim neovim/neovim`**.
 
   `-s, --system=`
 

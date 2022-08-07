@@ -219,6 +219,12 @@ func getExtractor(url, tool string, opts *Flags) (extractor Extractor, err error
 
 // Write an extracted file to disk with a new name.
 func writeFile(data []byte, rename string, mode fs.FileMode) error {
+	if rename[0] == '-' {
+		// if the output is '-', just print it to stdout
+		_, err := os.Stdout.Write(data)
+		return err
+	}
+
 	// remove file if it exists already
 	os.Remove(rename)
 	// make parent directories if necessary
@@ -449,7 +455,9 @@ func main() {
 		// write the extracted file to a file on disk, in the --to directory if
 		// requested
 		out := filepath.Base(bin.Name)
-		if opts.Output != "" && IsDirectory(opts.Output) {
+		if opts.Output == "-" {
+			out = "-"
+		} else if opts.Output != "" && IsDirectory(opts.Output) {
 			out = filepath.Join(opts.Output, out)
 		} else if opts.Output != "" && opts.All {
 			os.MkdirAll(opts.Output, 0755)
