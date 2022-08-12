@@ -84,7 +84,7 @@ func getFinder(project string, opts *Flags) (finder Finder, tool string) {
 		if IsGithubUrl(project) {
 			_, after, found := Cut(project, "github.com/")
 			if found {
-				project = after
+				project = strings.Trim(after, "/")
 			} else {
 				fatal(fmt.Sprintf("invalid GitHub repo URL %s", project))
 			}
