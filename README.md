@@ -22,7 +22,7 @@ list `eget` as a one-line method for users to install your software.
 Eget has a number of detection mechanisms and should work out-of-the-box with
 most software that is distributed via single binaries on GitHub releases. First
 try using Eget on your software, it may already just work. Otherwise, see the
-FAQ a clear set of rules to make your software compatible with Eget.
+FAQ for a clear set of rules to make your software compatible with Eget.
 
 For more in-depth documentation, see [DOCS.md](DOCS.md).
 
