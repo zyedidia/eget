@@ -65,7 +65,7 @@ func (os *OS) Match(s string) (bool, bool) {
 var (
 	OSDarwin = OS{
 		name:  "darwin",
-		regex: regexp.MustCompile(`(?i)(darwin|mac.?os|osx)`),
+		regex: regexp.MustCompile(`(?i)(darwin|mac.?(os)?|osx)`),
 	}
 	OSWindows = OS{
 		name:  "windows",
