@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/jessevdk/go-flags"
+	"github.com/joho/godotenv"
 	pb "github.com/schollz/progressbar/v3"
 )
 
@@ -291,6 +292,9 @@ func bintime(bin string, to string) (t time.Time) {
 
 func main() {
 	var opts Flags
+
+	godotenv.Load()
+
 	flagparser := flags.NewParser(&opts, flags.PassDoubleDash|flags.PrintErrors)
 	flagparser.Usage = "[OPTIONS] TARGET"
 	args, err := flagparser.Parse()
