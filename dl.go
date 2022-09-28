@@ -11,15 +11,39 @@ import (
 	pb "github.com/schollz/progressbar/v3"
 )
 
+func SetAuthHeader(req *http.Request) *http.Request {
+	hasGithubTokenEnv := os.Getenv("GITHUB_TOKEN") != ""
+	hasEgetGithubTokenEnv := os.Getenv("EGET_GITHUB_TOKEN") != ""
+	hasTokenEnvVar := hasGithubTokenEnv || hasEgetGithubTokenEnv
+
+	githubEnvToken := ""
+
+	if hasEgetGithubTokenEnv && githubEnvToken == "" {
+		githubEnvToken = os.Getenv("EGET_GITHUB_TOKEN")
+	}
+
+	if hasGithubTokenEnv && githubEnvToken == "" {
+		githubEnvToken = os.Getenv("GITHUB_TOKEN")
+	}
+
+	if req.URL.Scheme == "https" && req.Host == "api.github.com" && hasTokenEnvVar {
+		req.Header.Set("Authorization", fmt.Sprintf("token %s", githubEnvToken))
+	}
+
+	return req
+}
+
 func Get(url string) (*http.Response, error) {
 	req, err := http.NewRequest("GET", url, nil)
+
 	if err != nil {
 		return nil, err
 	}
-	if req.URL.Scheme == "https" && req.Host == "api.github.com" && os.Getenv("GITHUB_TOKEN") != "" {
-		req.Header.Set("Authorization", fmt.Sprintf("token %s", os.Getenv("GITHUB_TOKEN")))
-	}
+
+	req = SetAuthHeader(req)
+
 	proxyClient := &http.Client{Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+
 	return proxyClient.Do(req)
 }
 
@@ -47,14 +71,16 @@ func GetRateLimit() (RateLimit, error) {
 	if err != nil {
 		return RateLimit{}, err
 	}
-	if req.URL.Scheme == "https" && req.Host == "api.github.com" && os.Getenv("GITHUB_TOKEN") != "" {
-		req.Header.Set("Authorization", fmt.Sprintf("token %s", os.Getenv("GITHUB_TOKEN")))
-	}
+
+	req = SetAuthHeader(req)
+
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
+
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return RateLimit{}, err
 	}
+
 	defer resp.Body.Close()
 
 	b, err := io.ReadAll(resp.Body)
