@@ -126,9 +126,6 @@ personal access token and assign it to an environment variable named either
 `EGET_GITHUB_TOKEN` will take precedence. Eget will read this variable and
 send the token as authorization with requests to GitHub.
 
-Alternatively, you may set either environment variable in a `.env` file in
-the Eget directory, which will be loaded and used by Eget.
-
 ```
 Usage:
   eget [OPTIONS] TARGET

@@ -48,9 +48,6 @@ header: Eget Manual
   **`EGET_GITHUB_TOKEN`** will take precedence. Eget will read this variable and
   send the token as authorization with requests to GitHub.
 
-  Alternatively, you may set either environment variable in a `.env` file in
-  the Eget directory, which will be loaded and used by Eget.
-
   The behavior of Eget is configurable in a number of ways via options.
   Documentation for these options is provided below.
 
