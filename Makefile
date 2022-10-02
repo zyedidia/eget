@@ -6,6 +6,9 @@ GOVARS = -X main.Version=$(VERSION)
 build:
 	go build -trimpath -ldflags "-s -w $(GOVARS)" .
 
+build-dist:
+	go build -trimpath -ldflags "-s -w $(GOVARS)" -o dist/bin/eget-$(VERSION)-$(SYSTEM) .
+
 install:
 	go install -trimpath -ldflags "-s -w $(GOVARS)" .
 
@@ -22,18 +25,20 @@ test: eget
 	cd test; EGET_BIN= TEST_EGET=../eget go run test_eget.go
 
 eget.1: man/eget.md
-	pandoc man/eget.md -s -t man -o eget.1
+	pandoc man/eget.md -s -t man -o dist/eget.1
 
-package: build eget.1
-	mkdir eget-$(VERSION)-$(SYSTEM)
-	cp README.md eget-$(VERSION)-$(SYSTEM)
-	cp LICENSE eget-$(VERSION)-$(SYSTEM)
-	cp eget.1 eget-$(VERSION)-$(SYSTEM)
-	if [ ${GOOS} = "windows" ]; then\
-		cp eget.exe eget-$(VERSION)-$(SYSTEM);\
+package: build-dist eget.1
+	mkdir dist/eget-$(VERSION)-$(SYSTEM)
+	cp README.md dist/eget-$(VERSION)-$(SYSTEM)
+	cp LICENSE dist/eget-$(VERSION)-$(SYSTEM)
+	cp dist/eget.1 dist/eget-$(VERSION)-$(SYSTEM)
+	if [ "${GOOS}" = "windows" ]; then\
+		cp dist/bin/eget-$(VERSION)-$(SYSTEM) dist/eget-$(VERSION)-$(SYSTEM)/eget.exe;\
+		cd dist;\
 		zip -r -q -T eget-$(VERSION)-$(SYSTEM).zip eget-$(VERSION)-$(SYSTEM);\
 	else\
-		cp eget eget-$(VERSION)-$(SYSTEM);\
+		cp dist/bin/eget-$(VERSION)-$(SYSTEM) dist/eget-$(VERSION)-$(SYSTEM)/eget;\
+		cd dist;\
 		tar -czf eget-$(VERSION)-$(SYSTEM).tar.gz eget-$(VERSION)-$(SYSTEM);\
 	fi
 
@@ -41,8 +46,7 @@ version:
 	echo "package main\n\nvar Version = \"$(VERSION)+src\"" > version.go
 
 clean:
-	rm -f eget eget.exe eget.1 eget-*.tar.gz eget-*.zip
 	rm -f test/eget.1 test/fd test/micro test/nvim test/pandoc test/rg.exe
-	rm -rf eget-*/
+	rm -rf dist
 
 .PHONY: build clean install package version fmt vet test
