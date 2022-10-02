@@ -291,6 +291,7 @@ func bintime(bin string, to string) (t time.Time) {
 
 func main() {
 	var opts Flags
+
 	flagparser := flags.NewParser(&opts, flags.PassDoubleDash|flags.PrintErrors)
 	flagparser.Usage = "[OPTIONS] TARGET"
 	args, err := flagparser.Parse()

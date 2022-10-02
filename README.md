@@ -121,9 +121,10 @@ eget https://go.dev/dl/go1.17.5.linux-amd64.tar.gz --file go --to ~/go1.17.5
 
 GitHub limits API requests to 60 per hour for unauthenticated users. If you
 would like to perform more requests (up to 5,000 per hour), you can set up a
-personal access token and assign it to the environment variable `GITHUB_TOKEN`
-when running Eget. Eget will read this variable and send the token as
-authorization with requests to GitHub.
+personal access token and assign it to an environment variable named either
+`GITHUB_TOKEN` or `EGET_GITHUB_TOKEN` when running Eget. If both are set,
+`EGET_GITHUB_TOKEN` will take precedence. Eget will read this variable and
+send the token as authorization with requests to GitHub.
 
 ```
 Usage:
