@@ -315,8 +315,6 @@ func initializeConfig() (*viper.Viper, error) {
 
 	err := config.ReadInConfig()
 
-	// fmt.Printf("config: %v\n", config.AllSettings())
-
 	return config, err
 }
 
