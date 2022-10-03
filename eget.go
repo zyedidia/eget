@@ -306,6 +306,7 @@ func initializeConfig() (*viper.Viper, error) {
 	config.SetConfigType("toml")
 
 	config.SetDefault("global.github_token", "")
+	config.SetDefault("global.download_only", false)
 	config.SetDefault("global.quiet", false)
 	config.SetDefault("global.show_hash", false)
 	config.SetDefault("global.upgrade_only", false)
@@ -318,7 +319,7 @@ func initializeConfig() (*viper.Viper, error) {
 	return config, err
 }
 
-func setOptionsFromConfig(config *viper.Viper, parser *flags.Parser, opts *Flags) {
+func setOptionsFromConfig(config *viper.Viper, parser *flags.Parser, opts *Flags, sectionName string) {
 	getOptionBoolValue := func(longFlagName string, configKey string, currentValue bool) bool {
 		opt := parser.FindOptionByLongName(longFlagName)
 
@@ -329,20 +330,45 @@ func setOptionsFromConfig(config *viper.Viper, parser *flags.Parser, opts *Flags
 		return config.GetBool(configKey)
 	}
 
+	getOptionStringValue := func(longFlagName string, configKey string, currentValue string) string {
+		opt := parser.FindOptionByLongName(longFlagName)
+
+		if opt.IsSet() {
+			return currentValue
+		}
+
+		return config.GetString(configKey)
+	}
+
 	for _, configKey := range config.AllKeys() {
-		if configKey == "global.github_token" {
+		if configKey == sectionName+".github_token" {
 			value := config.GetString(configKey)
 			if config.GetString(configKey) != "" && os.Getenv("EGET_GITHUB_TOKEN") == "" {
 				os.Setenv("EGET_GITHUB_TOKEN", value)
 			}
 		}
-		if configKey == "global.quiet" {
+		if configKey == sectionName+".asset_filters" {
+			opts.Asset = append(opts.Asset, config.GetStringSlice(configKey)...)
+		}
+		if configKey == sectionName+".download_only" {
+			opts.DLOnly = getOptionBoolValue("download-only", configKey, opts.DLOnly)
+		}
+		if configKey == sectionName+".quiet" {
 			opts.Quiet = getOptionBoolValue("quiet", configKey, opts.Quiet)
 		}
-		if configKey == "global.show_hash" {
+		if configKey == sectionName+".show_hash" {
 			opts.Hash = getOptionBoolValue("sha256", configKey, opts.Hash)
 		}
-		if configKey == "global.upgrade_only" {
+		if configKey == sectionName+".system" {
+			opts.System = getOptionStringValue("system", configKey, opts.System)
+		}
+		if configKey == sectionName+".tag" {
+			opts.Tag = getOptionStringValue("tag", configKey, opts.Tag)
+		}
+		if configKey == sectionName+".target" {
+			opts.Output = getOptionStringValue("to", configKey, opts.Output)
+		}
+		if configKey == sectionName+".upgrade_only" {
 			opts.UpgradeOnly = getOptionBoolValue("upgrade-only", configKey, opts.UpgradeOnly)
 		}
 	}
@@ -361,7 +387,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	setOptionsFromConfig(config, flagparser, &opts)
+	setOptionsFromConfig(config, flagparser, &opts, "global")
 
 	if opts.Version {
 		fmt.Println("eget version", Version)
@@ -389,6 +415,9 @@ func main() {
 	}
 
 	target := args[0]
+
+	setOptionsFromConfig(config, flagparser, &opts, target)
+
 	if opts.Remove {
 		ebin := os.Getenv("EGET_BIN")
 		err := os.Remove(filepath.Join(ebin, target))
