@@ -298,10 +298,11 @@ func bintime(bin string, to string) (t time.Time) {
 func initializeConfig() (*viper.Viper, error) {
 	config := viper.New()
 
-	homePath := path.Dir(os.Args[0]) // os.Getenv("HOME")
+	homePath := os.Getenv("HOME")
+	appPath := path.Dir(os.Args[0])
 	appName := path.Base(os.Args[0])
 
-	config.SetConfigName(appName)
+	config.SetConfigName("." + appName)
 	config.SetConfigType("toml")
 
 	config.SetDefault("global.github_token", "")
@@ -310,6 +311,8 @@ func initializeConfig() (*viper.Viper, error) {
 	config.SetDefault("global.upgrade_only", false)
 
 	config.AddConfigPath(homePath)
+	config.AddConfigPath(appPath)
+
 	err := config.ReadInConfig()
 
 	fmt.Printf("config: %v\n", config.AllSettings())
