@@ -17,6 +17,7 @@ import (
 
 	"github.com/jessevdk/go-flags"
 	pb "github.com/schollz/progressbar/v3"
+	"github.com/spf13/viper"
 )
 
 func fatal(a ...interface{}) {
@@ -294,15 +295,72 @@ func bintime(bin string, to string) (t time.Time) {
 	return fi.ModTime()
 }
 
+func initializeConfig() (*viper.Viper, error) {
+	config := viper.New()
+
+	homePath := path.Dir(os.Args[0]) // os.Getenv("HOME")
+	appName := path.Base(os.Args[0])
+
+	config.SetConfigName(appName)
+	config.SetConfigType("toml")
+
+	config.SetDefault("global.github_token", "")
+	config.SetDefault("global.quiet", false)
+	config.SetDefault("global.show_hash", false)
+	config.SetDefault("global.upgrade_only", false)
+
+	config.AddConfigPath(homePath)
+	err := config.ReadInConfig()
+
+	fmt.Printf("config: %v\n", config.AllSettings())
+
+	return config, err
+}
+
+func setOptionsFromConfig(config *viper.Viper, parser *flags.Parser, opts *Flags) {
+	getOptionBoolValue := func(longFlagName string, configKey string, currentValue bool) bool {
+		opt := parser.FindOptionByLongName(longFlagName)
+
+		if opt.IsSet() {
+			return currentValue
+		}
+
+		return config.GetBool(configKey)
+	}
+
+	for _, configKey := range config.AllKeys() {
+		if configKey == "global.github_token" {
+			value := config.GetString(configKey)
+			if config.GetString(configKey) != "" && os.Getenv("EGET_GITHUB_TOKEN") == "" {
+				os.Setenv("EGET_GITHUB_TOKEN", value)
+			}
+		}
+		if configKey == "global.quiet" {
+			opts.Quiet = getOptionBoolValue("quiet", configKey, opts.Quiet)
+		}
+		if configKey == "global.show_hash" {
+			opts.Hash = getOptionBoolValue("sha256", configKey, opts.Hash)
+		}
+		if configKey == "global.upgrade_only" {
+			opts.UpgradeOnly = getOptionBoolValue("upgrade-only", configKey, opts.UpgradeOnly)
+		}
+	}
+}
+
 func main() {
 	var opts Flags
+
+	config, _ := initializeConfig()
 
 	flagparser := flags.NewParser(&opts, flags.PassDoubleDash|flags.PrintErrors)
 	flagparser.Usage = "[OPTIONS] TARGET"
 	args, err := flagparser.Parse()
+
 	if err != nil {
 		os.Exit(1)
 	}
+
+	setOptionsFromConfig(config, flagparser, &opts)
 
 	if opts.Version {
 		fmt.Println("eget version", Version)
