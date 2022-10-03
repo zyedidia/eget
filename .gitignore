@@ -5,3 +5,4 @@ todo.txt
 eget.1
 /test/*
 !/test/test_eget.go
+.eget.toml
