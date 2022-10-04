@@ -37,6 +37,8 @@ func main() {
 		defer wg.Done()
 
 		cmd := exec.Command("make", "package")
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
 		cmd.Env = os.Environ()
 		cmd.Env = append(cmd.Env,
 			fmt.Sprintf("GOOS=%s", platform),

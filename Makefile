@@ -25,13 +25,13 @@ test: eget
 	cd test; EGET_BIN= TEST_EGET=../eget go run test_eget.go
 
 eget.1: man/eget.md
-	pandoc man/eget.md -s -t man -o dist/eget.1
+	pandoc man/eget.md -s -t man -o eget.1
 
 package: build-dist eget.1
-	mkdir dist/eget-$(VERSION)-$(SYSTEM)
+	mkdir -p dist/eget-$(VERSION)-$(SYSTEM)
 	cp README.md dist/eget-$(VERSION)-$(SYSTEM)
 	cp LICENSE dist/eget-$(VERSION)-$(SYSTEM)
-	cp dist/eget.1 dist/eget-$(VERSION)-$(SYSTEM)
+	cp eget.1 dist/eget-$(VERSION)-$(SYSTEM)
 	if [ "${GOOS}" = "windows" ]; then\
 		cp dist/bin/eget-$(VERSION)-$(SYSTEM) dist/eget-$(VERSION)-$(SYSTEM)/eget.exe;\
 		cd dist;\
