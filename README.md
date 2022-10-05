@@ -157,6 +157,71 @@ Application Options:
   -h, --help           show this help message
 ```
 
+# Configuration
+
+Eget can be configured using a TOML file located at `~/.eget.toml`. Alternatively, the configuration 
+file can be located in the same directory as the Eget binary.
+
+Both global settings can be configured, as well as setting on a per-repository basis.
+
+Sections can be named either `global` or `"owner/repo"`, where `owner` and `repo` are the owner and
+repository name of the target repository (not that the `owner/repo` format is quoted). For example, 
+the following configuration file will set the `--to` flag to `~/bin` for all repositories, and will set
+the `--to` flag to `~/.local/bin` for the `zyedidia/micro` repository.
+  
+  ```toml
+[global]
+to = "~/bin"
+
+["zyedidia/micro"]
+to = "~/.local/bin"
+```
+
+## Available settings
+
+| Setting | Related Flag | Description | Default |
+| --- | --- | --- | --- |
+| `github_token` | `N/A` | GitHub API token to use for requests | `""` |
+| `target` | `--to` | The directory to move the downloaded file to after extraction. | `.` |
+| `system` | `--system` | The target system to download for. | `all` |
+| `file` | `--file` | The glob to select files for extraction. | `*` |
+| `all` | `--all` | Whether to extract all candidate files. | `false` |
+| `quiet` | `--quiet` | Whether to only print essential output. | `false` |
+| `download_only` | `--download-only` | Whether to stop after downloading the asset (no extraction). | `false` |
+| `upgrade_only` | `upgrade-only` | Whether to only download if release is more recent than current version. | `false` |
+| `asset_filters` | `--asset` |  An array of partial asset names to filter the available assets for download. | `[]` |
+| `show_hash` | `--sha256` | Whether to show the SHA-256 hash of the downloaded asset. | `false` |
+
+## Example configuration
+
+```toml
+[global]
+    github_token = "ghp_1234567890"
+    quiet = false
+    show_hash = false
+    upgrade_only = true
+    target = "./test"
+
+["zyedidia/micro"]
+    upgrade_only = false
+    show_hash = true
+    asset_filters = [ "static", ".tar.gz" ]
+    target = "~/.local/bin/micro"
+```
+
+By using the configuration above, you could run the following command to download the latest release of micro:
+
+```bash
+eget zyedidia/micro
+```
+
+Without the configuration, you would need to run the following command instead:
+
+```bash
+eget zyedidia/micro --to ~/.local/bin/micro --sha256\
+ --asset static --asset .tar.gz
+```
+
 # FAQ
 
 ### How is this different from a package manager?
