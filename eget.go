@@ -298,7 +298,7 @@ func bintime(bin string, to string) (t time.Time) {
 func initializeConfig() (*viper.Viper, error) {
 	config := viper.New()
 
-	homePath := os.Getenv("HOME")
+	homePath, err := os.UserHomeDir()
 	appPath := path.Dir(os.Args[0])
 	appName := path.Base(os.Args[0])
 
@@ -311,10 +311,13 @@ func initializeConfig() (*viper.Viper, error) {
 	config.SetDefault("global.show_hash", false)
 	config.SetDefault("global.upgrade_only", false)
 
-	config.AddConfigPath(homePath)
+	if err != nil {
+		config.AddConfigPath(homePath)
+	}
+
 	config.AddConfigPath(appPath)
 
-	err := config.ReadInConfig()
+	err = config.ReadInConfig()
 
 	return config, err
 }
