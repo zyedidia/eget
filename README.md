@@ -193,7 +193,7 @@ to = "~/.local/bin"
 | `show_hash` | `--sha256` | Whether to show the SHA-256 hash of the downloaded asset. | `false` |
 | `system` | `--system` | The target system to download for. | `all` |
 | `target` | `--to` | The directory to move the downloaded file to after extraction. | `.` |
-| `upgrade_only` | `upgrade-only` | Whether to only download if release is more recent than current version. | `false` |
+| `upgrade_only` | `--upgrade-only` | Whether to only download if release is more recent than current version. | `false` |
 
 ## Example configuration
 
