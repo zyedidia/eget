@@ -221,8 +221,8 @@ eget zyedidia/micro
 Without the configuration, you would need to run the following command instead:
 
 ```bash
-eget zyedidia/micro --to ~/.local/bin/micro --sha256\
- --asset static --asset .tar.gz
+export EGET_GITHUB_TOKEN=ghp_1234567890 &&\
+eget zyedidia/micro --to ~/.local/bin/micro --sha256 --asset static --asset .tar.gz
 ```
 
 # FAQ
