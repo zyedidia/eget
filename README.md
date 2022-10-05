@@ -159,15 +159,18 @@ Application Options:
 
 # Configuration
 
-Eget can be configured using a TOML file located at `~/.eget.toml`. Alternatively, the configuration 
-file can be located in the same directory as the Eget binary.
+Eget can be configured using a TOML file located at `~/.eget.toml`. Alternatively,
+the configuration file can be located in the same directory as the Eget binary.
 
 Both global settings can be configured, as well as setting on a per-repository basis.
 
-Sections can be named either `global` or `"owner/repo"`, where `owner` and `repo` are the owner and
-repository name of the target repository (not that the `owner/repo` format is quoted). For example, 
-the following configuration file will set the `--to` flag to `~/bin` for all repositories, and will set
-the `--to` flag to `~/.local/bin` for the `zyedidia/micro` repository.
+Sections can be named either `global` or `"owner/repo"`, where `owner` and `repo`
+are the owner and repository name of the target repository (not that the `owner/repo` 
+format is quoted).
+
+For example, the following configuration file will set the `--to` flag to `~/bin` for 
+all repositories, and will set the `--to` flag to `~/.local/bin` for the `zyedidia/micro` 
+repository.
   
   ```toml
 [global]
@@ -182,15 +185,15 @@ to = "~/.local/bin"
 | Setting | Related Flag | Description | Default |
 | --- | --- | --- | --- |
 | `github_token` | `N/A` | GitHub API token to use for requests | `""` |
-| `target` | `--to` | The directory to move the downloaded file to after extraction. | `.` |
-| `system` | `--system` | The target system to download for. | `all` |
-| `file` | `--file` | The glob to select files for extraction. | `*` |
 | `all` | `--all` | Whether to extract all candidate files. | `false` |
-| `quiet` | `--quiet` | Whether to only print essential output. | `false` |
-| `download_only` | `--download-only` | Whether to stop after downloading the asset (no extraction). | `false` |
-| `upgrade_only` | `upgrade-only` | Whether to only download if release is more recent than current version. | `false` |
 | `asset_filters` | `--asset` |  An array of partial asset names to filter the available assets for download. | `[]` |
+| `download_only` | `--download-only` | Whether to stop after downloading the asset (no extraction). | `false` |
+| `file` | `--file` | The glob to select files for extraction. | `*` |
+| `quiet` | `--quiet` | Whether to only print essential output. | `false` |
 | `show_hash` | `--sha256` | Whether to show the SHA-256 hash of the downloaded asset. | `false` |
+| `system` | `--system` | The target system to download for. | `all` |
+| `target` | `--to` | The directory to move the downloaded file to after extraction. | `.` |
+| `upgrade_only` | `upgrade-only` | Whether to only download if release is more recent than current version. | `false` |
 
 ## Example configuration
 
@@ -209,7 +212,7 @@ to = "~/.local/bin"
     target = "~/.local/bin/micro"
 ```
 
-By using the configuration above, you could run the following command to download the latest release of micro:
+By using the configuration above, you could run the following command to download the latest release of `micro`:
 
 ```bash
 eget zyedidia/micro
