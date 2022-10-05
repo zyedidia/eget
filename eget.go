@@ -350,11 +350,17 @@ func setOptionsFromConfig(config *viper.Viper, parser *flags.Parser, opts *Flags
 				os.Setenv("EGET_GITHUB_TOKEN", value)
 			}
 		}
+		if configKey == sectionName+".all" {
+			opts.All = getOptionBoolValue("all", configKey, opts.All)
+		}
 		if configKey == sectionName+".asset_filters" {
 			opts.Asset = append(opts.Asset, config.GetStringSlice(configKey)...)
 		}
 		if configKey == sectionName+".download_only" {
 			opts.DLOnly = getOptionBoolValue("download-only", configKey, opts.DLOnly)
+		}
+		if configKey == sectionName+".file" {
+			opts.ExtractFile = getOptionStringValue("file", configKey, opts.ExtractFile)
 		}
 		if configKey == sectionName+".quiet" {
 			opts.Quiet = getOptionBoolValue("quiet", configKey, opts.Quiet)
