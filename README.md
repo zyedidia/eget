@@ -72,6 +72,12 @@ One of the reasons to use eget is to avoid running curl into bash, but unfortuna
 brew install eget
 ```
 
+### Chocolatey
+
+```
+choco install eget
+```
+
 ### Pre-built binaries
 
 Pre-built binaries are available on the [releases](https://github.com/zyedidia/eget/releases) page.
