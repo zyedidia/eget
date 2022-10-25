@@ -256,6 +256,11 @@ func userSelect(choices []interface{}) int {
 		if err == nil {
 			break
 		}
+
+		if errors.Is(err, io.EOF) {
+			fatal("Error reading selection")
+		}
+
 		fmt.Fprintf(os.Stderr, "Invalid selection: %v\n", err)
 	}
 	return choice
