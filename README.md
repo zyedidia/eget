@@ -180,20 +180,36 @@ to = "~/bin"
 to = "~/.local/bin"
 ```
 
-## Available settings
+## Available settings - global section
 
 | Setting | Related Flag | Description | Default |
 | --- | --- | --- | --- |
 | `github_token` | `N/A` | GitHub API token to use for requests | `""` |
 | `all` | `--all` | Whether to extract all candidate files. | `false` |
-| `asset_filters` | `--asset` |  An array of partial asset names to filter the available assets for download. | `[]` |
 | `download_only` | `--download-only` | Whether to stop after downloading the asset (no extraction). | `false` |
+| `download_source` | `--source` | Whether to download the source code for the target repo instead of a release. | `false` |
 | `file` | `--file` | The glob to select files for extraction. | `*` |
 | `quiet` | `--quiet` | Whether to only print essential output. | `false` |
 | `show_hash` | `--sha256` | Whether to show the SHA-256 hash of the downloaded asset. | `false` |
 | `system` | `--system` | The target system to download for. | `all` |
 | `target` | `--to` | The directory to move the downloaded file to after extraction. | `.` |
 | `upgrade_only` | `--upgrade-only` | Whether to only download if release is more recent than current version. | `false` |
+
+## Available settings - repository sections
+
+| Setting | Related Flag | Description | Default |
+| --- | --- | --- | --- |
+| `all` | `--all` | Whether to extract all candidate files. | `false` |
+| `asset_filters` | `--asset` |  An array of partial asset names to filter the available assets for download. | `[]` |
+| `download_only` | `--download-only` | Whether to stop after downloading the asset (no extraction). | `false` |
+| `download_source` | `--source` | Whether to download the source code for the target repo instead of a release. | `false` |
+| `file` | `--file` | The glob to select files for extraction. | `*` |
+| `quiet` | `--quiet` | Whether to only print essential output. | `false` |
+| `show_hash` | `--sha256` | Whether to show the SHA-256 hash of the downloaded asset. | `false` |
+| `system` | `--system` | The target system to download for. | `all` |
+| `target` | `--to` | The directory to move the downloaded file to after extraction. | `.` |
+| `upgrade_only` | `--upgrade-only` | Whether to only download if release is more recent than current version. | `false` |
+
 
 ## Example configuration
 
