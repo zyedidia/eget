@@ -300,6 +300,7 @@ func main() {
 	flagparser := flags.NewParser(&opts, flags.PassDoubleDash|flags.PrintErrors)
 	flagparser.Usage = "[OPTIONS] TARGET"
 	args, err := flagparser.Parse()
+
 	if err != nil {
 		os.Exit(1)
 	}
@@ -330,6 +331,10 @@ func main() {
 	}
 
 	target := args[0]
+
+	config, _ := InitializeConfig()
+	SetOptionsFromConfig(config, flagparser, &opts, target)
+
 	if opts.Remove {
 		ebin := os.Getenv("EGET_BIN")
 		err := os.Remove(filepath.Join(ebin, target))
