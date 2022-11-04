@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -80,6 +81,9 @@ func (f *GithubAssetFinder) Find() ([]string, error) {
 		if err != nil {
 			return nil, err
 		}
+		if strings.HasPrefix(f.Tag, "tags/") && resp.StatusCode == http.StatusNotFound {
+			return f.FindMatch()
+		}
 		return nil, &GithubError{
 			Status: resp.Status,
 			Code:   resp.StatusCode,
@@ -111,6 +115,65 @@ func (f *GithubAssetFinder) Find() ([]string, error) {
 	}
 
 	return assets, nil
+}
+
+func (f *GithubAssetFinder) FindMatch() ([]string, error) {
+	tag := f.Tag[len("tags/"):]
+
+	for page := 1; ; page++ {
+		url := fmt.Sprintf("https://api.github.com/repos/%s/releases?page=%d", f.Repo, page)
+		resp, err := Get(url)
+		if err != nil {
+			return nil, err
+		}
+
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return nil, err
+			}
+			return nil, &GithubError{
+				Status: resp.Status,
+				Code:   resp.StatusCode,
+				Body:   body,
+				Url:    url,
+			}
+		}
+
+		// read and unmarshal the resulting json
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		var releases []GithubRelease
+		err = json.Unmarshal(body, &releases)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, r := range releases {
+			if !f.Prerelease && r.Prerelease {
+				continue
+			}
+			if strings.Contains(r.Tag, tag) && !r.CreatedAt.Before(f.MinTime) {
+				// we have a winner
+				assets := make([]string, 0, len(r.Assets))
+				for _, a := range r.Assets {
+					assets = append(assets, a.DownloadURL)
+				}
+				return assets, nil
+			}
+		}
+
+		if len(releases) < 30 {
+			break
+		}
+	}
+
+	return nil, fmt.Errorf("no matching tag for '%s'", tag)
 }
 
 // finds the latest pre-release and returns the tag
