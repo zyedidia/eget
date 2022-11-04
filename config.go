@@ -167,35 +167,47 @@ func InitializeConfig() (*Config, error) {
 	return &config, err
 }
 
-// Move the loaded configuration file options into the opts variable
-func SetOptionsFromConfig(config *Config, parser *flags.Parser, opts *Flags, projectName string) {
+func update[T any](config T, cli *T) T {
+	if cli == nil {
+		return config
+	}
+	return *cli
+}
 
+// Move the loaded configuration file options into the opts variable
+func SetOptionsFromConfig(config *Config, parser *flags.Parser, opts *Flags, cli CliFlags, projectName string) {
 	if config.Global.GithubToken != "" && os.Getenv("EGET_GITHUB_TOKEN") == "" {
 		os.Setenv("EGET_GITHUB_TOKEN", config.Global.GithubToken)
 	}
 
-	opts.All = config.Global.All
-	opts.DLOnly = config.Global.DownloadOnly
-	opts.Hash = config.Global.ShowHash
-	opts.Output = config.Global.Target
-	opts.Quiet = config.Global.Quiet
-	opts.System = config.Global.System
-	opts.UpgradeOnly = config.Global.UpgradeOnly
-	opts.Source = config.Global.Source
+	opts.Tag = update("", cli.Tag)
+	opts.Prerelease = update(false, cli.Prerelease)
+	opts.Source = update(config.Global.Source, cli.Source)
+	opts.Output = update(config.Global.Target, cli.Output)
+	opts.System = update(config.Global.System, cli.System)
+	opts.ExtractFile = update("", cli.ExtractFile)
+	opts.All = update(config.Global.All, cli.All)
+	opts.Quiet = update(config.Global.Quiet, cli.Quiet)
+	opts.DLOnly = update(config.Global.DownloadOnly, cli.DLOnly)
+	opts.UpgradeOnly = update(config.Global.UpgradeOnly, cli.UpgradeOnly)
+	opts.Asset = update([]string{}, cli.Asset)
+	opts.Hash = update(config.Global.ShowHash, cli.Hash)
+	opts.Verify = update("", cli.Verify)
+	opts.Remove = update(false, cli.Remove)
 
 	for name, repo := range config.Repositories {
 		if name == projectName {
-			opts.All = repo.All
-			opts.Asset = repo.AssetFilters
-			opts.DLOnly = repo.DownloadOnly
-			opts.ExtractFile = repo.File
-			opts.Hash = repo.ShowHash
-			opts.Output = repo.Target
-			opts.Quiet = repo.Quiet
-			opts.Source = repo.Source
-			opts.System = repo.System
-			opts.Tag = repo.Tag
-			opts.UpgradeOnly = repo.UpgradeOnly
+			opts.All = update(repo.All, cli.All)
+			opts.Asset = update(repo.AssetFilters, cli.Asset)
+			opts.DLOnly = update(repo.DownloadOnly, cli.DLOnly)
+			opts.ExtractFile = update(repo.File, cli.ExtractFile)
+			opts.Hash = update(repo.ShowHash, cli.Hash)
+			opts.Output = update(repo.Target, cli.Output)
+			opts.Quiet = update(repo.Quiet, cli.Quiet)
+			opts.Source = update(repo.Source, cli.Source)
+			opts.System = update(repo.System, cli.System)
+			opts.Tag = update(repo.Tag, cli.Tag)
+			opts.UpgradeOnly = update(repo.UpgradeOnly, cli.UpgradeOnly)
 			break
 		}
 	}

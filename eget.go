@@ -295,9 +295,9 @@ func bintime(bin string, to string) (t time.Time) {
 }
 
 func main() {
-	var opts Flags
+	var cli CliFlags
 
-	flagparser := flags.NewParser(&opts, flags.PassDoubleDash|flags.PrintErrors)
+	flagparser := flags.NewParser(&cli, flags.PassDoubleDash|flags.PrintErrors)
 	flagparser.Usage = "[OPTIONS] TARGET"
 	args, err := flagparser.Parse()
 
@@ -305,17 +305,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	if opts.Version {
+	if cli.Version {
 		fmt.Println("eget version", Version)
 		os.Exit(0)
 	}
 
-	if opts.Help {
+	if cli.Help {
 		flagparser.WriteHelp(os.Stdout)
 		os.Exit(0)
 	}
 
-	if opts.Rate {
+	if cli.Rate {
 		rdat, err := GetRateLimit()
 		if err != nil {
 			fatal(err)
@@ -332,8 +332,9 @@ func main() {
 
 	target := args[0]
 
+	var opts Flags
 	config, _ := InitializeConfig()
-	SetOptionsFromConfig(config, flagparser, &opts, target)
+	SetOptionsFromConfig(config, flagparser, &opts, cli, target)
 
 	if opts.Remove {
 		ebin := os.Getenv("EGET_BIN")
