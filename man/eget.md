@@ -54,7 +54,7 @@ header: Eget Manual
 # OPTIONS
   `-t, --tag=`
 
-:    Use the given tagged release instead of the latest release. Example: **`eget -t nightly zyedidia/micro`**.
+:    Use the given tagged release instead of the latest release. If the project does not have a tag that matches exactly, eget will look for a tag that contains the given string, and use the latest one. Example: **`eget -t nightly zyedidia/micro`**.
 
   `--pre-release`
 
