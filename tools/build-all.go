@@ -40,10 +40,17 @@ func main() {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		cmd.Env = os.Environ()
+		cgo := "0"
+		if runtime.GOOS == "darwin" {
+			cgo = "1"
+		} else {
+			fmt.Println("warning: it is recommended to cross-compile on Mac, for cgo")
+		}
 		cmd.Env = append(cmd.Env,
 			fmt.Sprintf("GOOS=%s", platform),
 			fmt.Sprintf("GOARCH=%s", architecture),
 			fmt.Sprintf("GOMAXPROCS=%d", runtime.NumCPU()),
+			fmt.Sprintf("CGO_ENABLED=%d", cgo),
 		)
 
 		err := cmd.Run()
