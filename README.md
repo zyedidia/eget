@@ -174,10 +174,10 @@ repository.
   
   ```toml
 [global]
-to = "~/bin"
+target = "~/bin"
 
 ["zyedidia/micro"]
-to = "~/.local/bin"
+target = "~/.local/bin"
 ```
 
 ## Available settings - global section
