@@ -6,6 +6,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/jessevdk/go-flags"
+	"github.com/zyedidia/eget/home"
 )
 
 type ConfigGlobal struct {
@@ -150,7 +151,7 @@ func InitializeConfig() (*Config, error) {
 		}
 
 		if !config.Meta.MetaData.IsDefined(name, "target") {
-			repo.Target = config.Global.Target
+			repo.Target, err = home.Expand(config.Global.Target)
 		}
 
 		if !config.Meta.MetaData.IsDefined(name, "upgrade_only") {
