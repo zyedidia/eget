@@ -2,7 +2,6 @@ package main
 
 import (
 	"os"
-	"path"
 
 	"github.com/BurntSushi/toml"
 	"github.com/jessevdk/go-flags"
@@ -67,15 +66,14 @@ func LoadConfigurationFile(path string) (Config, error) {
 	return conf, err
 }
 
-func InitializeConfig() (*Config, error) {
+func InitializeConfig() *Config {
 	homePath, _ := os.UserHomeDir()
-	appPath := path.Dir(os.Args[0])
-	appName := path.Base(os.Args[0])
+	appName := "eget"
 
 	config, err := LoadConfigurationFile(homePath + "/." + appName + ".toml")
 
 	if err != nil {
-		config, err = LoadConfigurationFile(appPath + "/." + appName + ".toml")
+		config, err = LoadConfigurationFile(appName + ".toml")
 	}
 
 	if err != nil {
@@ -92,7 +90,7 @@ func InitializeConfig() (*Config, error) {
 			Repositories: make(map[string]ConfigRepository, 0),
 		}
 
-		return &config, nil
+		return &config
 	}
 
 	delete(config.Repositories, "global")
@@ -151,7 +149,7 @@ func InitializeConfig() (*Config, error) {
 		}
 
 		if !config.Meta.MetaData.IsDefined(name, "target") {
-			repo.Target, err = home.Expand(config.Global.Target)
+			repo.Target = config.Global.Target
 		}
 
 		if !config.Meta.MetaData.IsDefined(name, "upgrade_only") {
@@ -165,7 +163,7 @@ func InitializeConfig() (*Config, error) {
 		config.Repositories[name] = repo
 	}
 
-	return &config, err
+	return &config
 }
 
 func update[T any](config T, cli *T) T {
@@ -176,7 +174,7 @@ func update[T any](config T, cli *T) T {
 }
 
 // Move the loaded configuration file options into the opts variable
-func SetOptionsFromConfig(config *Config, parser *flags.Parser, opts *Flags, cli CliFlags, projectName string) {
+func SetOptionsFromConfig(config *Config, parser *flags.Parser, opts *Flags, cli CliFlags, projectName string) error {
 	if config.Global.GithubToken != "" && os.Getenv("EGET_GITHUB_TOKEN") == "" {
 		os.Setenv("EGET_GITHUB_TOKEN", config.Global.GithubToken)
 	}
@@ -184,7 +182,11 @@ func SetOptionsFromConfig(config *Config, parser *flags.Parser, opts *Flags, cli
 	opts.Tag = update("", cli.Tag)
 	opts.Prerelease = update(false, cli.Prerelease)
 	opts.Source = update(config.Global.Source, cli.Source)
-	opts.Output = update(config.Global.Target, cli.Output)
+	targ, err := home.Expand(config.Global.Target)
+	if err != nil {
+		return err
+	}
+	opts.Output = update(targ, cli.Output)
 	opts.System = update(config.Global.System, cli.System)
 	opts.ExtractFile = update("", cli.ExtractFile)
 	opts.All = update(config.Global.All, cli.All)
@@ -203,7 +205,11 @@ func SetOptionsFromConfig(config *Config, parser *flags.Parser, opts *Flags, cli
 			opts.DLOnly = update(repo.DownloadOnly, cli.DLOnly)
 			opts.ExtractFile = update(repo.File, cli.ExtractFile)
 			opts.Hash = update(repo.ShowHash, cli.Hash)
-			opts.Output = update(repo.Target, cli.Output)
+			targ, err := home.Expand(repo.Target)
+			if err != nil {
+				return err
+			}
+			opts.Output = update(targ, cli.Output)
 			opts.Quiet = update(repo.Quiet, cli.Quiet)
 			opts.Source = update(repo.Source, cli.Source)
 			opts.System = update(repo.System, cli.System)
@@ -212,4 +218,5 @@ func SetOptionsFromConfig(config *Config, parser *flags.Parser, opts *Flags, cli
 			break
 		}
 	}
+	return nil
 }

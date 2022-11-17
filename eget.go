@@ -333,8 +333,11 @@ func main() {
 	target := args[0]
 
 	var opts Flags
-	config, _ := InitializeConfig()
-	SetOptionsFromConfig(config, flagparser, &opts, cli, target)
+	config := InitializeConfig()
+	err = SetOptionsFromConfig(config, flagparser, &opts, cli, target)
+	if err != nil {
+		fatal(err)
+	}
 
 	if opts.Remove {
 		ebin := os.Getenv("EGET_BIN")
