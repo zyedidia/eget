@@ -137,24 +137,25 @@ Usage:
   eget [OPTIONS] TARGET
 
 Application Options:
-  -t, --tag=           tagged release to use instead of latest
-      --pre-release    include pre-releases when fetching the latest version
-      --source         download the source code for the target repo instead of a release
-      --to=            move to given location after extracting
-  -s, --system=        target system to download for (use "all" for all choices)
-  -f, --file=          glob to select files for extraction
-      --all            extract all candidate files
-  -q, --quiet          only print essential output
-  -d, --download-only  stop after downloading the asset (no extraction)
-      --upgrade-only   only download if release is more recent than current version
-  -a, --asset=         download a specific asset containing the given string; can be specified
-                       multiple times for additional filtering; use ^ for anti-match
-      --sha256         show the SHA-256 hash of the downloaded asset
-      --verify-sha256= verify the downloaded asset checksum against the one provided
-      --rate           show GitHub API rate limiting information
-  -r, --remove         remove the given file from $EGET_BIN or the current directory
-  -v, --version        show version information
-  -h, --help           show this help message
+  -t, --tag=            tagged release to use instead of latest
+      --pre-release     include pre-releases when fetching the latest version
+      --source          download the source code for the target repo instead of a release
+      --to=             move to given location after extracting
+  -s, --system=         target system to download for (use "all" for all choices)
+  -f, --file=           glob to select files for extraction
+      --all             extract all candidate files
+  -q, --quiet           only print essential output
+  -d, --download-only   stop after downloading the asset (no extraction)
+  -D  --download-config download all projects defined in the configuration file
+      --upgrade-only    only download if release is more recent than current version
+  -a, --asset=          download a specific asset containing the given string; can be specified
+                        multiple times for additional filtering; use ^ for anti-match
+      --sha256          show the SHA-256 hash of the downloaded asset
+      --verify-sha256=  verify the downloaded asset checksum against the one provided
+      --rate            show GitHub API rate limiting information
+  -r, --remove          remove the given file from $EGET_BIN or the current directory
+  -v, --version         show version information
+  -h, --help            show this help message
 ```
 
 # Configuration
