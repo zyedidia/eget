@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"errors"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"io/fs"
 	"net/url"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"regexp"
@@ -294,6 +296,36 @@ func bintime(bin string, to string) (t time.Time) {
 	return fi.ModTime()
 }
 
+func downloadConfigRepositories(config *Config) error {
+	hasError := false
+
+	for name, _ := range config.Repositories {
+		cmd := exec.Command(os.Args[0], name)
+		stderr, _ := cmd.StderrPipe()
+		cmd.Start()
+
+		scanner := bufio.NewScanner(stderr)
+		scanner.Split(bufio.ScanBytes)
+
+		for scanner.Scan() {
+			m := scanner.Text()
+			fmt.Print(m)
+		}
+
+		cmd.Wait()
+
+		if !hasError && cmd.ProcessState.ExitCode() != 0 {
+			hasError = true
+		}
+	}
+
+	if hasError {
+		return errors.New("one or more repositories failed to download")
+	}
+
+	return nil
+}
+
 func main() {
 	var cli CliFlags
 
@@ -324,19 +356,33 @@ func main() {
 		os.Exit(0)
 	}
 
-	if len(args) <= 0 {
-		fmt.Println("no target given")
-		flagparser.WriteHelp(os.Stdout)
-		os.Exit(0)
-	}
+	target := ""
 
-	target := args[0]
+	if len(args) > 0 {
+		target = args[0]
+	}
 
 	var opts Flags
 	config := InitializeConfig()
 	err = SetOptionsFromConfig(config, flagparser, &opts, cli, target)
 	if err != nil {
 		fatal(err)
+	}
+
+	if cli.ConfigDownload {
+		err = downloadConfigRepositories(config)
+
+		if err != nil {
+			fatal(err)
+		}
+
+		os.Exit(0)
+	}
+
+	if len(args) <= 0 {
+		fmt.Println("no target given")
+		flagparser.WriteHelp(os.Stdout)
+		os.Exit(0)
 	}
 
 	if opts.Remove {
