@@ -369,7 +369,7 @@ func main() {
 		fatal(err)
 	}
 
-	if cli.ConfigDownload {
+	if cli.DownloadAll {
 		err = downloadConfigRepositories(config)
 
 		if err != nil {
