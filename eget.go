@@ -297,6 +297,8 @@ func bintime(bin string, to string) (t time.Time) {
 
 func downloadConfigRepositories(config *Config) error {
 	hasError := false
+	errorList := []error{}
+
 	binary, err := os.Executable()
 
 	if err != nil {
@@ -310,15 +312,17 @@ func downloadConfigRepositories(config *Config) error {
 		err := cmd.Run()
 		if err != nil {
 			hasError = true
+			errorList = append(errorList, err)
 		}
 
 		if !hasError && cmd.ProcessState.ExitCode() != 0 {
 			hasError = true
+			errorList = append(errorList, err)
 		}
 	}
 
 	if hasError {
-		return errors.New("one or more repositories failed to download")
+		return fmt.Errorf("one or more errors occurred while downloading: %v", errorList)
 	}
 
 	return nil
