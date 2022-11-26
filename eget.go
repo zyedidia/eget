@@ -314,11 +314,6 @@ func downloadConfigRepositories(config *Config) error {
 			hasError = true
 			errorList = append(errorList, err)
 		}
-
-		if !hasError && cmd.ProcessState.ExitCode() != 0 {
-			hasError = true
-			errorList = append(errorList, err)
-		}
 	}
 
 	if hasError {
