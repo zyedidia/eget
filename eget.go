@@ -307,8 +307,10 @@ func downloadConfigRepositories(config *Config) error {
 		cmd := exec.Command(binary, name)
 		cmd.Stderr = os.Stderr
 
-		cmd.Start()
-		cmd.Wait()
+		err := cmd.Run()
+		if err != nil {
+			hasError = true
+		}
 
 		if !hasError && cmd.ProcessState.ExitCode() != 0 {
 			hasError = true
