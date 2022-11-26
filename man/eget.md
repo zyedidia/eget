@@ -88,6 +88,10 @@ header: Eget Manual
 
 :    Stop after downloading the asset. This prevents Eget from performing extraction, allowing you to perform manual installation after the asset is downloaded.
 
+  `--download-all`
+
+:   Download all projects defined in the configuration file.
+
    --upgrade-only
 
 :    Only download the asset if the release is more recent than an existing asset with the same name in `$EGET_BIN`, or the current directory if `$EGET_BIN` is not defined.

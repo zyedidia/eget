@@ -35,4 +35,5 @@ type CliFlags struct {
 	Remove      *bool     `short:"r" long:"remove" description:"remove the given file from $EGET_BIN or the current directory"`
 	Version     bool      `short:"v" long:"version" description:"show version information"`
 	Help        bool      `short:"h" long:"help" description:"show this help message"`
+	DownloadAll bool      `short:"D" long:"download-all" description:"download all projects defined in the config file"`
 }

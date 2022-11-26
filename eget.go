@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"net/url"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"regexp"
@@ -294,6 +295,34 @@ func bintime(bin string, to string) (t time.Time) {
 	return fi.ModTime()
 }
 
+func downloadConfigRepositories(config *Config) error {
+	hasError := false
+	errorList := []error{}
+
+	binary, err := os.Executable()
+
+	if err != nil {
+		binary = os.Args[0]
+	}
+
+	for name, _ := range config.Repositories {
+		cmd := exec.Command(binary, name)
+		cmd.Stderr = os.Stderr
+
+		err := cmd.Run()
+		if err != nil {
+			hasError = true
+			errorList = append(errorList, err)
+		}
+	}
+
+	if hasError {
+		return fmt.Errorf("one or more errors occurred while downloading: %v", errorList)
+	}
+
+	return nil
+}
+
 func main() {
 	var cli CliFlags
 
@@ -324,19 +353,33 @@ func main() {
 		os.Exit(0)
 	}
 
-	if len(args) <= 0 {
-		fmt.Println("no target given")
-		flagparser.WriteHelp(os.Stdout)
-		os.Exit(0)
-	}
+	target := ""
 
-	target := args[0]
+	if len(args) > 0 {
+		target = args[0]
+	}
 
 	var opts Flags
 	config := InitializeConfig()
 	err = SetOptionsFromConfig(config, flagparser, &opts, cli, target)
 	if err != nil {
 		fatal(err)
+	}
+
+	if cli.DownloadAll {
+		err = downloadConfigRepositories(config)
+
+		if err != nil {
+			fatal(err)
+		}
+
+		os.Exit(0)
+	}
+
+	if len(args) <= 0 {
+		fmt.Println("no target given")
+		flagparser.WriteHelp(os.Stdout)
+		os.Exit(0)
 	}
 
 	if opts.Remove {
