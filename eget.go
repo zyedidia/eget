@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
 	"errors"
 	"fmt"
@@ -306,17 +305,9 @@ func downloadConfigRepositories(config *Config) error {
 
 	for name, _ := range config.Repositories {
 		cmd := exec.Command(binary, name)
-		stderr, _ := cmd.StderrPipe()
+		cmd.Stderr = os.Stderr
+
 		cmd.Start()
-
-		scanner := bufio.NewScanner(stderr)
-		scanner.Split(bufio.ScanBytes)
-
-		for scanner.Scan() {
-			m := scanner.Text()
-			fmt.Print(m)
-		}
-
 		cmd.Wait()
 
 		if !hasError && cmd.ProcessState.ExitCode() != 0 {
