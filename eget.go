@@ -298,9 +298,14 @@ func bintime(bin string, to string) (t time.Time) {
 
 func downloadConfigRepositories(config *Config) error {
 	hasError := false
+	binary, err := os.Executable()
+
+	if err != nil {
+		binary = os.Args[0]
+	}
 
 	for name, _ := range config.Repositories {
-		cmd := exec.Command(os.Args[0], name)
+		cmd := exec.Command(binary, name)
 		stderr, _ := cmd.StderrPipe()
 		cmd.Start()
 
