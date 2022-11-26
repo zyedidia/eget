@@ -146,7 +146,7 @@ Application Options:
       --all             extract all candidate files
   -q, --quiet           only print essential output
   -d, --download-only   stop after downloading the asset (no extraction)
-  -D  --download-config download all projects defined in the configuration file
+  -D  --download-all    download all projects defined in the configuration file
       --upgrade-only    only download if release is more recent than current version
   -a, --asset=          download a specific asset containing the given string; can be specified
                         multiple times for additional filtering; use ^ for anti-match

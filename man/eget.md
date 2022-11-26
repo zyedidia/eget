@@ -88,7 +88,7 @@ header: Eget Manual
 
 :    Stop after downloading the asset. This prevents Eget from performing extraction, allowing you to perform manual installation after the asset is downloaded.
 
-  `--download-config`
+  `--download-all`
 
 :   Download all projects defined in the configuration file.
 
