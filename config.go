@@ -104,9 +104,7 @@ func InitializeConfig() *Config {
 
 	if configFilePath, ok := os.LookupEnv("EGET_CONFIG"); ok {
 		config, err = LoadConfigurationFile(configFilePath)
-	}
-
-	if err != nil {
+	} else {
 		config, err = LoadConfigurationFile(homePath + "/." + appName + ".toml")
 	}
 
