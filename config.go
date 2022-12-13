@@ -73,19 +73,17 @@ func GetOSConfigPath(homePath string) string {
 
 	defaultConfig := map[string]string{
 		"windows": "LocalAppData",
-		"darwin":  "Library/Application Support",
-		"linux":   ".config",
+		"default": ".config",
 	}
 
-	goos := runtime.GOOS
-	switch goos {
+	var goos string
+	switch runtime.GOOS {
 	case "windows":
 		configDir = os.Getenv("LOCALAPPDATA")
-	case "darwin", "linux":
+		goos = "windows"
+	default:
 		configDir = os.Getenv("XDG_CONFIG_HOME")
-	case "default":
-		// exit with no path for unknown os
-		return ""
+		goos = "default"
 	}
 
 	if configDir == "" {
