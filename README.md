@@ -160,20 +160,20 @@ Application Options:
 
 # Configuration
 
-Eget can be configured using a TOML file located at `~/.eget.toml`. Alternatively,
-the configuration file can be located in the same directory as the Eget binary.
+Eget can be configured using a TOML file located at `~/.eget.toml` or it will fallback to the expected `XDG_CONFIG_HOME` directory of your os. Alternatively,
+the configuration file can be located in the same directory as the Eget binary or the path specified with the environment variable `EGET_CONFIG`.
 
 Both global settings can be configured, as well as setting on a per-repository basis.
 
 Sections can be named either `global` or `"owner/repo"`, where `owner` and `repo`
-are the owner and repository name of the target repository (not that the `owner/repo` 
+are the owner and repository name of the target repository (not that the `owner/repo`
 format is quoted).
 
-For example, the following configuration file will set the `--to` flag to `~/bin` for 
-all repositories, and will set the `--to` flag to `~/.local/bin` for the `zyedidia/micro` 
+For example, the following configuration file will set the `--to` flag to `~/bin` for
+all repositories, and will set the `--to` flag to `~/.local/bin` for the `zyedidia/micro`
 repository.
-  
-  ```toml
+
+```toml
 [global]
 target = "~/bin"
 
@@ -279,16 +279,16 @@ Eget should work out-of-the-box with many methods for releasing software, and
 does not require that you build your release process for Eget in particular.
 However, here are some rules that will guarantee compatibility with Eget.
 
-* Provide your pre-built binaries as GitHub release assets.
-* Format the system name as `OS_Arch` and include it in every pre-built binary
+- Provide your pre-built binaries as GitHub release assets.
+- Format the system name as `OS_Arch` and include it in every pre-built binary
   name. Supported OSes are `darwin`/`macos`, `windows`, `linux`, `netbsd`,
   `openbsd`, `freebsd`, `android`, `illumos`, `solaris`, `plan9`. Supported
   architectures are `amd64`, `i386`, `arm`, `arm64`, `riscv64`.
-* If desired, include `*.sha256` files for each asset, containing the SHA-256
+- If desired, include `*.sha256` files for each asset, containing the SHA-256
   checksum of each asset. These checksums will be automatically verified by
   Eget.
-* Include only a single executable or appimage per system in each release archive.
-* Use `.tar.gz`, `.tar.bz2`, `.tar.xz`, `.tar`, or `.zip` for archives. You may
+- Include only a single executable or appimage per system in each release archive.
+- Use `.tar.gz`, `.tar.bz2`, `.tar.xz`, `.tar`, or `.zip` for archives. You may
   also directly upload the executable without an archive, or a compressed
   executable ending in `.gz`, `.bz2`, or `.xz`.
 

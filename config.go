@@ -2,6 +2,8 @@ package main
 
 import (
 	"os"
+	"path/filepath"
+	"runtime"
 
 	"github.com/BurntSushi/toml"
 	"github.com/jessevdk/go-flags"
@@ -66,14 +68,51 @@ func LoadConfigurationFile(path string) (Config, error) {
 	return conf, err
 }
 
+func GetOSConfigPath(homePath string) string {
+	var configDir string
+
+	defaultConfig := map[string]string{
+		"windows": "LocalAppData",
+		"default": ".config",
+	}
+
+	var goos string
+	switch runtime.GOOS {
+	case "windows":
+		configDir = os.Getenv("LOCALAPPDATA")
+		goos = "windows"
+	default:
+		configDir = os.Getenv("XDG_CONFIG_HOME")
+		goos = "default"
+	}
+
+	if configDir == "" {
+		configDir = filepath.Join(homePath, defaultConfig[goos])
+	}
+
+	return filepath.Join(configDir, "eget", "eget.toml")
+}
+
 func InitializeConfig() *Config {
+	var err error
+	var config Config
+
 	homePath, _ := os.UserHomeDir()
 	appName := "eget"
 
-	config, err := LoadConfigurationFile(homePath + "/." + appName + ".toml")
+	if configFilePath, ok := os.LookupEnv("EGET_CONFIG"); ok {
+		config, err = LoadConfigurationFile(configFilePath)
+	} else {
+		config, err = LoadConfigurationFile(homePath + "/." + appName + ".toml")
+	}
 
 	if err != nil {
 		config, err = LoadConfigurationFile(appName + ".toml")
+	}
+
+	configFallBackPath := GetOSConfigPath(homePath)
+	if err != nil && configFallBackPath != "" {
+		config, err = LoadConfigurationFile(configFallBackPath)
 	}
 
 	if err != nil {
