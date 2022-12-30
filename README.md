@@ -292,6 +292,15 @@ However, here are some rules that will guarantee compatibility with Eget.
   also directly upload the executable without an archive, or a compressed
   executable ending in `.gz`, `.bz2`, or `.xz`.
 
+### Does this work with monorepos?
+
+Yes, you can pass a tag or tag identifier with the `--tag TAG` option. If no
+tag exactly matches, Eget will look for the latest release with a tag that
+contains `TAG`. So if your repository contains releases for multiple different
+projects, just pass the appropriate tag (for the project you want) to Eget, and
+it will find the latest release for that particular project (as long as
+releases for that project are given tags that contain the project name).
+
 # Contributing
 
 If you find a bug, have a suggestion, or something else, please open an issue
