@@ -138,7 +138,7 @@ func NewExtractor(filename string, tool string, chooser Chooser) Extractor {
 			Name:       filename,
 			Decompress: xunzipper,
 		}
-	case strings.HasSuffix(filename, ".zstd"):
+	case strings.HasSuffix(filename, ".zst"):
 		return &SingleFileExtractor{
 			Rename:     tool,
 			Name:       filename,
