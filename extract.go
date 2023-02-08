@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/gobwas/glob"
+	"github.com/klauspost/compress/zstd"
 	"github.com/ulikunitz/xz"
 )
 
@@ -76,6 +77,9 @@ func NewExtractor(filename string, tool string, chooser Chooser) Extractor {
 	xunzipper := func(r io.Reader) (io.Reader, error) {
 		return xz.NewReader(bufio.NewReader(r))
 	}
+	zstdunzipper := func(r io.Reader) (io.Reader, error) {
+		return zstd.NewReader(r)
+	}
 	nounzipper := func(r io.Reader) (io.Reader, error) {
 		return r, nil
 	}
@@ -98,6 +102,12 @@ func NewExtractor(filename string, tool string, chooser Chooser) Extractor {
 			File:       chooser,
 			Ar:         NewTarArchive,
 			Decompress: xunzipper,
+		}
+	case strings.HasSuffix(filename, ".tar.zst"):
+		return &ArchiveExtractor{
+			File:       chooser,
+			Ar:         NewTarArchive,
+			Decompress: zstdunzipper,
 		}
 	case strings.HasSuffix(filename, ".tar"):
 		return &ArchiveExtractor{
@@ -127,6 +137,12 @@ func NewExtractor(filename string, tool string, chooser Chooser) Extractor {
 			Rename:     tool,
 			Name:       filename,
 			Decompress: xunzipper,
+		}
+	case strings.HasSuffix(filename, ".zstd"):
+		return &SingleFileExtractor{
+			Rename:     tool,
+			Name:       filename,
+			Decompress: zstdunzipper,
 		}
 	default:
 		return &SingleFileExtractor{
