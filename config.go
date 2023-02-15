@@ -36,6 +36,7 @@ type ConfigRepository struct {
 	Tag          string   `toml:"tag"`
 	Target       string   `toml:"target"`
 	UpgradeOnly  bool     `toml:"upgrade_only"`
+	Verify       string   `toml:"verify_sha256"`
 }
 
 type Config struct {
@@ -254,6 +255,7 @@ func SetOptionsFromConfig(config *Config, parser *flags.Parser, opts *Flags, cli
 			opts.System = update(repo.System, cli.System)
 			opts.Tag = update(repo.Tag, cli.Tag)
 			opts.UpgradeOnly = update(repo.UpgradeOnly, cli.UpgradeOnly)
+			opts.Verify = update(repo.Verify, cli.Verify)
 			break
 		}
 	}
