@@ -255,6 +255,15 @@ does not maintain a registry for uninstallation. Eget works best for installing
 software that comes as a single binary with no additional files needed (CLI
 tools made in Go, Rust, or Haskell tend to fit this description).
 
+### Does Eget keep track of installed binaries?
+
+Eget does not maintain any sort of manifest containing information about
+installed binaries. In general, Eget does not maintain any state across
+invocations. However, Eget does support the `--upgrade-only` option, which
+will first check `EGET_BIN` to determine if you have already downloaded the
+tool you are trying to install -- if so it will only download a new version if
+the GitHub release is newer than the binary on your file system.
+
 ### Is this secure?
 
 Eget does not run any downloaded code -- it just finds executables from GitHub
