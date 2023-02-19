@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -27,6 +28,10 @@ func SetAuthHeader(req *http.Request) *http.Request {
 	}
 
 	if req.URL.Scheme == "https" && req.Host == "api.github.com" && hasTokenEnvVar {
+		if opts.DisableSSL {
+			fmt.Fprintln(os.Stderr, "error: cannot use GitHub token if SSL verification is disabled")
+			os.Exit(1)
+		}
 		req.Header.Set("Authorization", fmt.Sprintf("token %s", githubEnvToken))
 	}
 
@@ -42,7 +47,10 @@ func Get(url string) (*http.Response, error) {
 
 	req = SetAuthHeader(req)
 
-	proxyClient := &http.Client{Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+	proxyClient := &http.Client{Transport: &http.Transport{
+		Proxy:           http.ProxyFromEnvironment,
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: opts.DisableSSL},
+	}}
 
 	return proxyClient.Do(req)
 }

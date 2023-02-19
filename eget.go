@@ -323,6 +323,8 @@ func downloadConfigRepositories(config *Config) error {
 	return nil
 }
 
+var opts Flags
+
 func main() {
 	var cli CliFlags
 
@@ -359,7 +361,6 @@ func main() {
 		target = args[0]
 	}
 
-	var opts Flags
 	config := InitializeConfig()
 	err = SetOptionsFromConfig(config, flagparser, &opts, cli, target)
 	if err != nil {
@@ -380,6 +381,10 @@ func main() {
 		fmt.Println("no target given")
 		flagparser.WriteHelp(os.Stdout)
 		os.Exit(0)
+	}
+
+	if opts.DisableSSL {
+		fmt.Fprintln(os.Stderr, "warning: SSL verification is disabled")
 	}
 
 	if opts.Remove {
