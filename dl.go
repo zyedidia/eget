@@ -3,36 +3,49 @@ package main
 import (
 	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	pb "github.com/schollz/progressbar/v3"
 )
 
+func tokenFrom(s string) (string, error) {
+	if strings.HasPrefix(s, "@") {
+		b, err := os.ReadFile(s[1:])
+		return string(b), err
+	}
+	return s, nil
+}
+
+var ErrNoToken = errors.New("no github token")
+
+func getGithubToken() (string, error) {
+	if os.Getenv("EGET_GITHUB_TOKEN") != "" {
+		return tokenFrom(os.Getenv("EGET_GITHUB_TOKEN"))
+	}
+	if os.Getenv("GITHUB_TOKEN") != "" {
+		return tokenFrom(os.Getenv("EGET_GITHUB_TOKEN"))
+	}
+	return "", ErrNoToken
+}
+
 func SetAuthHeader(req *http.Request) *http.Request {
-	hasGithubTokenEnv := os.Getenv("GITHUB_TOKEN") != ""
-	hasEgetGithubTokenEnv := os.Getenv("EGET_GITHUB_TOKEN") != ""
-	hasTokenEnvVar := hasGithubTokenEnv || hasEgetGithubTokenEnv
-
-	githubEnvToken := ""
-
-	if hasEgetGithubTokenEnv && githubEnvToken == "" {
-		githubEnvToken = os.Getenv("EGET_GITHUB_TOKEN")
+	token, err := getGithubToken()
+	if err != nil && !errors.Is(err, ErrNoToken) {
+		fmt.Fprintln(os.Stderr, "warning: not using github token:", err)
 	}
 
-	if hasGithubTokenEnv && githubEnvToken == "" {
-		githubEnvToken = os.Getenv("GITHUB_TOKEN")
-	}
-
-	if req.URL.Scheme == "https" && req.Host == "api.github.com" && hasTokenEnvVar {
+	if req.URL.Scheme == "https" && req.Host == "api.github.com" && err == nil {
 		if opts.DisableSSL {
 			fmt.Fprintln(os.Stderr, "error: cannot use GitHub token if SSL verification is disabled")
 			os.Exit(1)
 		}
-		req.Header.Set("Authorization", fmt.Sprintf("token %s", githubEnvToken))
+		req.Header.Set("Authorization", fmt.Sprintf("token %s", token))
 	}
 
 	return req
