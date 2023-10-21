@@ -83,7 +83,16 @@ func (r RateLimit) ResetTime() time.Time {
 }
 
 func (r RateLimit) String() string {
-	return fmt.Sprintf("Limit: %d, Remaining: %d, Reset: %v", r.Limit, r.Remaining, r.ResetTime())
+	now := time.Now()
+	rtime := r.ResetTime()
+	if rtime.Before(now) {
+		return fmt.Sprintf("Limit: %d, Remaining: %d, Reset: %v", r.Limit, r.Remaining, rtime)
+	} else {
+		return fmt.Sprintf(
+			"Limit: %d, Remaining: %d, Reset: %v (%v)",
+			r.Limit, r.Remaining, rtime, rtime.Sub(now).Round(time.Second),
+		)
+	}
 }
 
 func GetRateLimit() (RateLimit, error) {
