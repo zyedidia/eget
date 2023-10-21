@@ -361,7 +361,11 @@ func main() {
 		target = args[0]
 	}
 
-	config := InitializeConfig()
+	config, err := InitializeConfig()
+	if err != nil {
+		fatal(err)
+	}
+
 	err = SetOptionsFromConfig(config, flagparser, &opts, cli, target)
 	if err != nil {
 		fatal(err)

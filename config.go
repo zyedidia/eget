@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -95,7 +97,7 @@ func GetOSConfigPath(homePath string) string {
 	return filepath.Join(configDir, "eget", "eget.toml")
 }
 
-func InitializeConfig() *Config {
+func InitializeConfig() (*Config, error) {
 	var err error
 	var config Config
 
@@ -103,18 +105,36 @@ func InitializeConfig() *Config {
 	appName := "eget"
 
 	if configFilePath, ok := os.LookupEnv("EGET_CONFIG"); ok {
-		config, err = LoadConfigurationFile(configFilePath)
+		if config, err = LoadConfigurationFile(configFilePath); err != nil {
+			if !errors.Is(err, os.ErrNotExist) {
+				return &config, fmt.Errorf("error loading config: %v: %w", configFilePath, err)
+			}
+		}
 	} else {
-		config, err = LoadConfigurationFile(homePath + "/." + appName + ".toml")
+		configFilePath := homePath + "/." + appName + ".toml"
+		if config, err = LoadConfigurationFile(configFilePath); err != nil {
+			if !errors.Is(err, os.ErrNotExist) {
+				return &config, fmt.Errorf("error loading config: %v: %w", configFilePath, err)
+			}
+		}
 	}
 
 	if err != nil {
-		config, err = LoadConfigurationFile(appName + ".toml")
+		configFilePath := appName + ".toml"
+		if config, err = LoadConfigurationFile(configFilePath); err != nil {
+			if !errors.Is(err, os.ErrNotExist) {
+				return &config, fmt.Errorf("error loading config: %v: %w", configFilePath, err)
+			}
+		}
 	}
 
 	configFallBackPath := GetOSConfigPath(homePath)
 	if err != nil && configFallBackPath != "" {
-		config, err = LoadConfigurationFile(configFallBackPath)
+		if config, err = LoadConfigurationFile(configFallBackPath); err != nil {
+			if !errors.Is(err, os.ErrNotExist) {
+				return &config, fmt.Errorf("error loading config: %v: %w", configFallBackPath, err)
+			}
+		}
 	}
 
 	if err != nil {
@@ -131,7 +151,7 @@ func InitializeConfig() *Config {
 			Repositories: make(map[string]ConfigRepository, 0),
 		}
 
-		return &config
+		return &config, nil
 	}
 
 	delete(config.Repositories, "global")
@@ -204,7 +224,7 @@ func InitializeConfig() *Config {
 		config.Repositories[name] = repo
 	}
 
-	return &config
+	return &config, nil
 }
 
 func update[T any](config T, cli *T) T {
