@@ -105,35 +105,27 @@ func InitializeConfig() (*Config, error) {
 	appName := "eget"
 
 	if configFilePath, ok := os.LookupEnv("EGET_CONFIG"); ok {
-		if config, err = LoadConfigurationFile(configFilePath); err != nil {
-			if !errors.Is(err, os.ErrNotExist) {
-				return &config, fmt.Errorf("error loading config: %v: %w", configFilePath, err)
-			}
+		if config, err = LoadConfigurationFile(configFilePath); err != nil && !errors.Is(err, os.ErrNotExist) {
+			return nil, fmt.Errorf("%s: %w", configFilePath, err)
 		}
 	} else {
 		configFilePath := homePath + "/." + appName + ".toml"
-		if config, err = LoadConfigurationFile(configFilePath); err != nil {
-			if !errors.Is(err, os.ErrNotExist) {
-				return &config, fmt.Errorf("error loading config: %v: %w", configFilePath, err)
-			}
+		if config, err = LoadConfigurationFile(configFilePath); err != nil && !errors.Is(err, os.ErrNotExist) {
+			return nil, fmt.Errorf("%s: %w", configFilePath, err)
 		}
 	}
 
 	if err != nil {
 		configFilePath := appName + ".toml"
-		if config, err = LoadConfigurationFile(configFilePath); err != nil {
-			if !errors.Is(err, os.ErrNotExist) {
-				return &config, fmt.Errorf("error loading config: %v: %w", configFilePath, err)
-			}
+		if config, err = LoadConfigurationFile(configFilePath); err != nil && !errors.Is(err, os.ErrNotExist) {
+			return nil, fmt.Errorf("%s: %w", configFilePath, err)
 		}
 	}
 
 	configFallBackPath := GetOSConfigPath(homePath)
 	if err != nil && configFallBackPath != "" {
-		if config, err = LoadConfigurationFile(configFallBackPath); err != nil {
-			if !errors.Is(err, os.ErrNotExist) {
-				return &config, fmt.Errorf("error loading config: %v: %w", configFallBackPath, err)
-			}
+		if config, err = LoadConfigurationFile(configFallBackPath); err != nil && !errors.Is(err, os.ErrNotExist) {
+			return nil, fmt.Errorf("%s: %w", configFallBackPath, err)
 		}
 	}
 
