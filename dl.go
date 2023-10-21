@@ -29,7 +29,7 @@ func getGithubToken() (string, error) {
 		return tokenFrom(os.Getenv("EGET_GITHUB_TOKEN"))
 	}
 	if os.Getenv("GITHUB_TOKEN") != "" {
-		return tokenFrom(os.Getenv("EGET_GITHUB_TOKEN"))
+		return tokenFrom(os.Getenv("GITHUB_TOKEN"))
 	}
 	return "", ErrNoToken
 }
