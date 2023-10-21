@@ -408,7 +408,7 @@ func main() {
 	assets, err := finder.Find()
 	if err != nil {
 		if errors.Is(err, ErrNoUpgrade) {
-			fmt.Fprintf(output, "%v\n", err)
+			fmt.Fprintf(output, "%s: %v\n", target, err)
 			os.Exit(0)
 		}
 		fatal(err)
