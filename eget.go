@@ -346,6 +346,16 @@ func main() {
 		os.Exit(0)
 	}
 
+	config, err := InitializeConfig()
+	if err != nil {
+		fatal(err)
+	}
+
+	err = SetGlobalOptionsFromConfig(config, flagparser, &opts, cli)
+	if err != nil {
+		fatal(err)
+	}
+
 	if cli.Rate {
 		rdat, err := GetRateLimit()
 		if err != nil {
@@ -361,12 +371,7 @@ func main() {
 		target = args[0]
 	}
 
-	config, err := InitializeConfig()
-	if err != nil {
-		fatal(err)
-	}
-
-	err = SetOptionsFromConfig(config, flagparser, &opts, cli, target)
+	err = SetProjectOptionsFromConfig(config, flagparser, &opts, cli, target)
 	if err != nil {
 		fatal(err)
 	}

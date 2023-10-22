@@ -226,8 +226,8 @@ func update[T any](config T, cli *T) T {
 	return *cli
 }
 
-// Move the loaded configuration file options into the opts variable
-func SetOptionsFromConfig(config *Config, parser *flags.Parser, opts *Flags, cli CliFlags, projectName string) error {
+// Move the loaded configuration file global options into the opts variable
+func SetGlobalOptionsFromConfig(config *Config, parser *flags.Parser, opts *Flags, cli CliFlags) error {
 	if config.Global.GithubToken != "" && os.Getenv("EGET_GITHUB_TOKEN") == "" {
 		os.Setenv("EGET_GITHUB_TOKEN", config.Global.GithubToken)
 	}
@@ -251,7 +251,11 @@ func SetOptionsFromConfig(config *Config, parser *flags.Parser, opts *Flags, cli
 	opts.Verify = update("", cli.Verify)
 	opts.Remove = update(false, cli.Remove)
 	opts.DisableSSL = update(false, cli.DisableSSL)
+	return nil
+}
 
+// Move the loaded configuration file project options into the opts variable
+func SetProjectOptionsFromConfig(config *Config, parser *flags.Parser, opts *Flags, cli CliFlags, projectName string) error {
 	for name, repo := range config.Repositories {
 		if name == projectName {
 			opts.All = update(repo.All, cli.All)

@@ -12,12 +12,17 @@ import (
 	"time"
 
 	pb "github.com/schollz/progressbar/v3"
+	"github.com/zyedidia/eget/home"
 )
 
 func tokenFrom(s string) (string, error) {
 	if strings.HasPrefix(s, "@") {
-		b, err := os.ReadFile(s[1:])
-		return string(b), err
+		f, err := home.Expand(s[1:])
+		if err != nil {
+			return "", err
+		}
+		b, err := os.ReadFile(f)
+		return strings.TrimRight(string(b), "\r\n"), nil
 	}
 	return s, nil
 }
