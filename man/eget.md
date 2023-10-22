@@ -46,7 +46,8 @@ header: Eget Manual
   personal access token and assign it to an environment variable named either
   **`GITHUB_TOKEN`** or **`EGET_GITHUB_TOKEN`** when running Eget. If both are set,
   **`EGET_GITHUB_TOKEN`** will take precedence. Eget will read this variable and
-  send the token as authorization with requests to GitHub.
+  send the token as authorization with requests to GitHub. It is also possible to
+  read the token from a file by using `@/path/to/file` as the token value.
 
   The behavior of Eget is configurable in a number of ways via options.
   Documentation for these options is provided below.
