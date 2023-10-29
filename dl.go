@@ -150,6 +150,14 @@ func Download(url string, out io.Writer, getbar func(size int64) *pb.ProgressBar
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+		return fmt.Errorf("download error: %d: %s", resp.StatusCode, body)
+	}
+
 	bar := getbar(resp.ContentLength)
 	_, err = io.Copy(io.MultiWriter(out, bar), resp.Body)
 	return err
