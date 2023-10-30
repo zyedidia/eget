@@ -50,7 +50,7 @@ func SetAuthHeader(req *http.Request) *http.Request {
 			fmt.Fprintln(os.Stderr, "error: cannot use GitHub token if SSL verification is disabled")
 			os.Exit(1)
 		}
-		req.Header.Set("Authorization", fmt.Sprintf("token %s", token))
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	}
 
 	return req
