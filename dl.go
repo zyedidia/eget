@@ -15,6 +15,11 @@ import (
 	"github.com/zyedidia/eget/home"
 )
 
+const (
+	AcceptBinary     = "application/octet-stream"
+	AcceptGitHubJSON = "application/vnd.github+json"
+)
+
 func tokenFrom(s string) (string, error) {
 	if strings.HasPrefix(s, "@") {
 		f, err := home.Expand(s[1:])
@@ -56,12 +61,13 @@ func SetAuthHeader(req *http.Request) *http.Request {
 	return req
 }
 
-func Get(url string) (*http.Response, error) {
+func Get(url, accept string) (*http.Response, error) {
 	req, err := http.NewRequest("GET", url, nil)
-
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Set("Accept", accept)
 
 	req = SetAuthHeader(req)
 
@@ -101,21 +107,10 @@ func (r RateLimit) String() string {
 }
 
 func GetRateLimit() (RateLimit, error) {
-	url := "https://api.github.com/rate_limit"
-	req, err := http.NewRequest("GET", url, nil)
+	resp, err := Get("https://api.github.com/rate_limit", AcceptGitHubJSON)
 	if err != nil {
 		return RateLimit{}, err
 	}
-
-	req = SetAuthHeader(req)
-
-	req.Header.Set("Accept", "application/vnd.github.v3+json")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return RateLimit{}, err
-	}
-
 	defer resp.Body.Close()
 
 	b, err := io.ReadAll(resp.Body)
@@ -144,7 +139,7 @@ func Download(url string, out io.Writer, getbar func(size int64) *pb.ProgressBar
 		return err
 	}
 
-	resp, err := Get(url)
+	resp, err := Get(url, AcceptBinary)
 	if err != nil {
 		return err
 	}
