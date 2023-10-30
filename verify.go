@@ -65,7 +65,7 @@ type Sha256AssetVerifier struct {
 }
 
 func (s256 *Sha256AssetVerifier) Verify(b []byte) error {
-	resp, err := Get(s256.AssetURL)
+	resp, err := Get(s256.AssetURL, AcceptBinary)
 	if err != nil {
 		return err
 	}
