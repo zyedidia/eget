@@ -60,15 +60,15 @@ func IsDirectory(path string) bool {
 	return fileInfo.IsDir()
 }
 
-// searches for an asset thaat has the same name as the requested one but
+// searches for an asset that has the same name as the requested one but
 // ending with .sha256 or .sha256sum
-func checksumAsset(asset string, assets []string) string {
+func checksumAsset(asset Asset, assets []Asset) Asset {
 	for _, a := range assets {
-		if a == asset+".sha256sum" || a == asset+".sha256" {
+		if a.Name == asset.Name+".sha256sum" || a.Name == asset.Name+".sha256" {
 			return a
 		}
 	}
-	return ""
+	return Asset{}
 }
 
 // Determine the appropriate Finder to use. If opts.URL is provided, we use
@@ -135,12 +135,12 @@ func getFinder(project string, opts *Flags) (finder Finder, tool string) {
 	return finder, tool
 }
 
-func getVerifier(sumAsset string, opts *Flags) (verifier Verifier, err error) {
+func getVerifier(sumAsset Asset, opts *Flags) (verifier Verifier, err error) {
 	if opts.Verify != "" {
 		verifier, err = NewSha256Verifier(opts.Verify)
-	} else if sumAsset != "" {
+	} else if sumAsset != (Asset{}) {
 		verifier = &Sha256AssetVerifier{
-			AssetURL: sumAsset,
+			AssetURL: sumAsset.DownloadURL,
 		}
 	} else if opts.Hash {
 		verifier = &Sha256Printer{}
@@ -428,27 +428,31 @@ func main() {
 		fatal(err)
 	}
 
-	// get the url and candidates from the detector
-	url, candidates, err := detector.Detect(assets)
+	// get the asset and candidates from the detector
+	asset, candidates, err := detector.Detect(assets)
 	if len(candidates) != 0 && err != nil {
 		// if multiple candidates are returned, the user must select manually which one to download
 		fmt.Fprintf(os.Stderr, "%v: please select manually\n", err)
 		choices := make([]interface{}, len(candidates))
 		for i := range candidates {
-			choices[i] = path.Base(candidates[i])
+			choices[i] = path.Base(candidates[i].Name)
 		}
 		choice := userSelect(choices)
-		url = candidates[choice-1]
+		asset = candidates[choice-1]
 	} else if err != nil {
 		fatal(err)
 	}
 
-	// print the URL
-	fmt.Fprintf(output, "%s\n", url)
+	// print the download URL of the asset
+	if asset.Name != asset.DownloadURL {
+		fmt.Fprintf(output, "%s (%s)\n", asset.DownloadURL, asset.Name)
+	} else {
+		fmt.Fprintf(output, "%s\n", asset.DownloadURL)
+	}
 
 	// download with progress bar
 	buf := &bytes.Buffer{}
-	err = Download(url, buf, func(size int64) *pb.ProgressBar {
+	err = Download(asset.DownloadURL, buf, func(size int64) *pb.ProgressBar {
 		var pbout io.Writer = os.Stderr
 		if opts.Quiet {
 			pbout = io.Discard
@@ -474,12 +478,12 @@ func main() {
 			}))
 	})
 	if err != nil {
-		fatal(fmt.Sprintf("%s (URL: %s)", err, url))
+		fatal(fmt.Sprintf("%s (URL: %s)", err, asset.DownloadURL))
 	}
 
 	body := buf.Bytes()
 
-	sumAsset := checksumAsset(url, assets)
+	sumAsset := checksumAsset(asset, assets)
 	verifier, err := getVerifier(sumAsset, &opts)
 	if err != nil {
 		fatal(err)
@@ -487,13 +491,13 @@ func main() {
 	err = verifier.Verify(body)
 	if err != nil {
 		fatal(err)
-	} else if opts.Verify == "" && sumAsset != "" {
-		fmt.Fprintf(output, "Checksum verified with %s\n", path.Base(sumAsset))
+	} else if opts.Verify == "" && sumAsset != (Asset{}) {
+		fmt.Fprintf(output, "Checksum verified with %s\n", path.Base(sumAsset.Name))
 	} else if opts.Verify != "" {
 		fmt.Fprintf(output, "Checksum verified\n")
 	}
 
-	extractor, err := getExtractor(url, tool, &opts)
+	extractor, err := getExtractor(asset.Name, tool, &opts)
 	if err != nil {
 		fatal(err)
 	}
