@@ -135,6 +135,7 @@ func getVerifier(asset string, assets []string, opts *Flags) (verifier Verifier,
 
 	for _, a := range assets {
 		if a == asset+".sha256sum" || a == asset+".sha256" {
+			fmt.Printf("verify against %s\n", a)
 			return &Sha256AssetVerifier{
 				AssetURL: a,
 			}, nil
@@ -145,6 +146,7 @@ func getVerifier(asset string, assets []string, opts *Flags) (verifier Verifier,
 				return nil, fmt.Errorf("extract binary name from asset url: %s: %w", asset, err)
 			}
 			binaryName := path.Base(binaryUrl.Path)
+			fmt.Printf("verify against %s\n", a)
 			return &Sha256SumFileAssetVerifier{
 				Sha256SumAssetURL: a,
 				BinaryName:        binaryName,

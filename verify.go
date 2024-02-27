@@ -91,6 +91,9 @@ func (s256 *Sha256AssetVerifier) Verify(b []byte) error {
 	}
 	expected := make([]byte, sha256.Size)
 	n, err := hex.Decode(expected, data)
+	if err != nil {
+		return fmt.Errorf("decode data: %w", err)
+	}
 	if n < sha256.Size {
 		return fmt.Errorf("sha256sum (%s) too small: %d bytes decoded", string(data), n)
 	}
@@ -114,45 +117,32 @@ type Sha256SumFileAssetVerifier struct {
 }
 
 func (s256 *Sha256SumFileAssetVerifier) Verify(b []byte) error {
+	got := sha256.Sum256(b)
+
 	resp, err := Get(s256.Sha256SumAssetURL)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 
-	var expected []byte
 	expectedFound := false
-	scanner := bufio.NewScanner(resp.Body) // f is the *os.File
-	sha256sumLinePattern := regexp.MustCompile(fmt.Sprintf("([a-f0-9]+)\\s+(%s)", s256.BinaryName))
+	scanner := bufio.NewScanner(resp.Body)
+	sha256sumLinePattern := regexp.MustCompile(fmt.Sprintf("(%x)\\s+(%s)", got, s256.BinaryName))
 	for scanner.Scan() {
-		matches := sha256sumLinePattern.FindSubmatch(scanner.Bytes())
+		line := scanner.Bytes()
+		matches := sha256sumLinePattern.FindSubmatch(line)
 		if matches == nil {
 			continue
 		}
-		decoded := make([]byte, sha256.Size)
-		n, err := hex.Decode(decoded, matches[1])
-		if err != nil {
-			return fmt.Errorf("decode expected sha256sum %s: %w", matches[1], err)
-		}
-		if n < sha256.Size {
-			return fmt.Errorf("sha256sum (%s) too small: %d bytes decoded", matches[1], n)
-		}
-		expected = decoded[:n]
 		expectedFound = true
+		break
 	}
 	if err := scanner.Err(); err != nil {
 		return fmt.Errorf("read sha256sum %s: %w", s256.Sha256SumAssetURL, err)
 	}
 	if !expectedFound {
 		return &Sha256Error{
-			Expected: expected[:],
-		}
-	}
-	got := sha256.Sum256(b)
-	if !bytes.Equal(got[:], expected[:]) {
-		return &Sha256Error{
-			Expected: expected[:],
-			Got:      got[:],
+			Got: got[:],
 		}
 	}
 	return nil
