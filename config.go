@@ -9,6 +9,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/jessevdk/go-flags"
+
 	"github.com/zyedidia/eget/home"
 )
 
@@ -40,6 +41,8 @@ type ConfigRepository struct {
 	UpgradeOnly  bool     `toml:"upgrade_only"`
 	Verify       string   `toml:"verify_sha256"`
 	DisableSSL   bool     `toml:"disable_ssl"`
+	Host         string   `toml:"host"`
+	HostType     string   `toml:"host_type"`
 }
 
 type Config struct {
@@ -54,7 +57,6 @@ type Config struct {
 func LoadConfigurationFile(path string) (Config, error) {
 	var conf Config
 	meta, err := toml.DecodeFile(path, &conf)
-
 	if err != nil {
 		return conf, err
 	}
@@ -251,6 +253,8 @@ func SetGlobalOptionsFromConfig(config *Config, parser *flags.Parser, opts *Flag
 	opts.Verify = update("", cli.Verify)
 	opts.Remove = update(false, cli.Remove)
 	opts.DisableSSL = update(false, cli.DisableSSL)
+	opts.Host = update("", cli.Host)
+	opts.HostType = update("", cli.HostType)
 	return nil
 }
 
@@ -275,6 +279,8 @@ func SetProjectOptionsFromConfig(config *Config, parser *flags.Parser, opts *Fla
 			opts.UpgradeOnly = update(repo.UpgradeOnly, cli.UpgradeOnly)
 			opts.Verify = update(repo.Verify, cli.Verify)
 			opts.DisableSSL = update(repo.DisableSSL, cli.DisableSSL)
+			opts.Host = update(repo.Host, cli.Host)
+			opts.HostType = update(repo.HostType, cli.HostType)
 			break
 		}
 	}

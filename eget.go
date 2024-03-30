@@ -117,6 +117,16 @@ func getFinder(project string, opts *Flags) (finder Finder, tool string) {
 				tag = fmt.Sprintf("tags/%s", opts.Tag)
 			}
 
+			host := "github.com"
+			if opts.Host != "" {
+				host = opts.Host
+			}
+
+			hostType := Github
+			if opts.HostType != "" {
+				hostType = opts.HostType
+			}
+
 			var mint time.Time
 			if opts.UpgradeOnly {
 				parts := strings.Split(project, "/")
@@ -124,11 +134,13 @@ func getFinder(project string, opts *Flags) (finder Finder, tool string) {
 				mint = bintime(last, opts.Output)
 			}
 
-			finder = &GithubAssetFinder{
+			finder = &AssetFinder{
 				Repo:       repo,
 				Tag:        tag,
 				Prerelease: opts.Prerelease,
 				MinTime:    mint,
+				Host:       host,
+				HostType:   hostType,
 			}
 		}
 	}
@@ -300,12 +312,11 @@ func downloadConfigRepositories(config *Config) error {
 	errorList := []error{}
 
 	binary, err := os.Executable()
-
 	if err != nil {
 		binary = os.Args[0]
 	}
 
-	for name, _ := range config.Repositories {
+	for name := range config.Repositories {
 		cmd := exec.Command(binary, name)
 		cmd.Stderr = os.Stderr
 
@@ -331,7 +342,6 @@ func main() {
 	flagparser := flags.NewParser(&cli, flags.PassDoubleDash|flags.PrintErrors)
 	flagparser.Usage = "[OPTIONS] TARGET"
 	args, err := flagparser.Parse()
-
 	if err != nil {
 		os.Exit(1)
 	}
@@ -350,6 +360,8 @@ func main() {
 	if err != nil {
 		fatal(err)
 	}
+
+	fmt.Println(opts)
 
 	err = SetGlobalOptionsFromConfig(config, flagparser, &opts, cli)
 	if err != nil {
@@ -378,7 +390,6 @@ func main() {
 
 	if cli.DownloadAll {
 		err = downloadConfigRepositories(config)
-
 		if err != nil {
 			fatal(err)
 		}

@@ -37,6 +37,11 @@ type errResponse struct {
 	Doc     string `json:"documentation_url"`
 }
 
+const (
+	Github = "github"
+	Gitea  = "gitea"
+)
+
 func (ge *GithubError) Error() string {
 	var msg errResponse
 	json.Unmarshal(ge.Body, &msg)
@@ -47,18 +52,20 @@ func (ge *GithubError) Error() string {
 	return fmt.Sprintf("%s (URL: %s)", ge.Status, ge.Url)
 }
 
-// A GithubAssetFinder finds assets for the given Repo at the given tag. Tags
+// A AssetFinder finds assets for the given Repo at the given tag. Tags
 // must be given as 'tag/<tag>'. Use 'latest' to get the latest release.
-type GithubAssetFinder struct {
+type AssetFinder struct {
 	Repo       string
 	Tag        string
 	Prerelease bool
+	HostType   string
+	Host       string
 	MinTime    time.Time // release must be after MinTime to be found
 }
 
 var ErrNoUpgrade = errors.New("requested release is not more recent than current version")
 
-func (f *GithubAssetFinder) Find() ([]string, error) {
+func (f *AssetFinder) Find() ([]string, error) {
 	if f.Prerelease && f.Tag == "latest" {
 		tag, err := f.getLatestTag()
 		if err != nil {
@@ -68,7 +75,7 @@ func (f *GithubAssetFinder) Find() ([]string, error) {
 	}
 
 	// query github's API for this repo/tag pair.
-	url := fmt.Sprintf("https://api.github.com/repos/%s/releases/%s", f.Repo, f.Tag)
+	url := fmt.Sprintf("%s/%s", f.getReleasesUrl(), f.Tag)
 	resp, err := Get(url)
 	if err != nil {
 		return nil, err
@@ -117,11 +124,12 @@ func (f *GithubAssetFinder) Find() ([]string, error) {
 	return assets, nil
 }
 
-func (f *GithubAssetFinder) FindMatch() ([]string, error) {
+func (f *AssetFinder) FindMatch() ([]string, error) {
 	tag := f.Tag[len("tags/"):]
+	url := f.getReleasesUrl()
 
 	for page := 1; ; page++ {
-		url := fmt.Sprintf("https://api.github.com/repos/%s/releases?page=%d", f.Repo, page)
+		url := fmt.Sprintf("%s?page=%d", url, page)
 		resp, err := Get(url)
 		if err != nil {
 			return nil, err
@@ -176,9 +184,21 @@ func (f *GithubAssetFinder) FindMatch() ([]string, error) {
 	return nil, fmt.Errorf("no matching tag for '%s'", tag)
 }
 
+func (f *AssetFinder) getReleasesUrl() string {
+	fmt.Println(f.HostType)
+	switch f.HostType {
+	case Github:
+		return fmt.Sprintf("https://api.%s/repos/%s/releases", f.Host, f.Repo)
+	case Gitea:
+		return fmt.Sprintf("https://%s/api/v1/repos/%s/releases", f.Host, f.Repo)
+	default:
+		return ""
+	}
+}
+
 // finds the latest pre-release and returns the tag
-func (f *GithubAssetFinder) getLatestTag() (string, error) {
-	url := fmt.Sprintf("https://api.github.com/repos/%s/releases", f.Repo)
+func (f *AssetFinder) getLatestTag() (string, error) {
+	url := f.getReleasesUrl()
 	resp, err := Get(url)
 	if err != nil {
 		return "", fmt.Errorf("pre-release finder: %w", err)
@@ -212,11 +232,12 @@ func (f *DirectAssetFinder) Find() ([]string, error) {
 }
 
 type GithubSourceFinder struct {
+	Host string
 	Tool string
 	Repo string
 	Tag  string
 }
 
 func (f *GithubSourceFinder) Find() ([]string, error) {
-	return []string{fmt.Sprintf("https://github.com/%s/tarball/%s/%s.tar.gz", f.Repo, f.Tag, f.Tool)}, nil
+	return []string{fmt.Sprintf("https://%s/%s/tarball/%s/%s.tar.gz", f.Host, f.Repo, f.Tag, f.Tool)}, nil
 }
