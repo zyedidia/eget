@@ -361,8 +361,6 @@ func main() {
 		fatal(err)
 	}
 
-	fmt.Println(opts)
-
 	err = SetGlobalOptionsFromConfig(config, flagparser, &opts, cli)
 	if err != nil {
 		fatal(err)
