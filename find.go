@@ -185,7 +185,6 @@ func (f *AssetFinder) FindMatch() ([]string, error) {
 }
 
 func (f *AssetFinder) getReleasesUrl() string {
-	fmt.Println(f.HostType)
 	switch f.HostType {
 	case Github:
 		return fmt.Sprintf("https://api.%s/repos/%s/releases", f.Host, f.Repo)
