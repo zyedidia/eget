@@ -145,10 +145,10 @@ header: Eget Manual
 
 ```toml
   [global]
-  to = "~/bin"
+  target = "~/bin"
 
   ["zyedidia/micro"]
-  to = "~/.local/bin"
+  target = "~/.local/bin"
 ```
 
   More complete example configuration:
