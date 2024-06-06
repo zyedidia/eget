@@ -230,11 +230,12 @@ func SetGlobalOptionsFromConfig(config *Config, parser *flags.Parser, opts *Flag
 	opts.Tag = update("", cli.Tag)
 	opts.Prerelease = update(false, cli.Prerelease)
 	opts.Source = update(config.Global.Source, cli.Source)
-	targ, err := home.Expand(config.Global.Target)
+	targ := update(config.Global.Target, cli.Output)
+	expanded, err := home.Expand(targ)
 	if err != nil {
 		return err
 	}
-	opts.Output = update(targ, cli.Output)
+	opts.Output = expanded
 	opts.System = update(config.Global.System, cli.System)
 	opts.ExtractFile = update("", cli.ExtractFile)
 	opts.All = update(config.Global.All, cli.All)
