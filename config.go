@@ -173,11 +173,6 @@ func InitializeConfig() (*Config, error) {
 		config.Global.UpgradeOnly = false
 	}
 
-	if !config.Meta.MetaData.IsDefined("global", "target") {
-		cwd, _ := os.Getwd()
-		config.Global.Target = cwd
-	}
-
 	// set default repository values
 	for name, repo := range config.Repositories {
 
@@ -201,7 +196,7 @@ func InitializeConfig() (*Config, error) {
 			repo.ShowHash = config.Global.ShowHash
 		}
 
-		if !config.Meta.MetaData.IsDefined(name, "target") {
+		if !config.Meta.MetaData.IsDefined(name, "target") && config.Global.Target != "" {
 			repo.Target = config.Global.Target
 		}
 
