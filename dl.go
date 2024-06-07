@@ -12,6 +12,7 @@ import (
 	"time"
 
 	pb "github.com/schollz/progressbar/v3"
+
 	"github.com/zyedidia/eget/home"
 )
 
@@ -58,7 +59,6 @@ func SetAuthHeader(req *http.Request) *http.Request {
 
 func Get(url string) (*http.Response, error) {
 	req, err := http.NewRequest("GET", url, nil)
-
 	if err != nil {
 		return nil, err
 	}
