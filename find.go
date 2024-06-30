@@ -10,15 +10,22 @@ import (
 	"time"
 )
 
-// A Finder returns a list of URLs making up a project's assets.
+// A Finder returns a list of assets for a project.
 type Finder interface {
-	Find() ([]string, error)
+	Find() ([]Asset, error)
+}
+
+// An Asset is the name (if any) and download URL for an asset of a project.
+type Asset struct {
+	Name        string
+	DownloadURL string
 }
 
 // A GithubRelease matches the Assets portion of Github's release API json.
 type GithubRelease struct {
 	Assets []struct {
-		DownloadURL string `json:"browser_download_url"`
+		Name string `json:"name"`
+		URL  string `json:"url"`
 	} `json:"assets"`
 
 	Prerelease bool      `json:"prerelease"`
@@ -58,7 +65,7 @@ type GithubAssetFinder struct {
 
 var ErrNoUpgrade = errors.New("requested release is not more recent than current version")
 
-func (f *GithubAssetFinder) Find() ([]string, error) {
+func (f *GithubAssetFinder) Find() ([]Asset, error) {
 	if f.Prerelease && f.Tag == "latest" {
 		tag, err := f.getLatestTag()
 		if err != nil {
@@ -69,7 +76,7 @@ func (f *GithubAssetFinder) Find() ([]string, error) {
 
 	// query github's API for this repo/tag pair.
 	url := fmt.Sprintf("https://api.github.com/repos/%s/releases/%s", f.Repo, f.Tag)
-	resp, err := Get(url)
+	resp, err := Get(url, AcceptGitHubJSON)
 	if err != nil {
 		return nil, err
 	}
@@ -109,20 +116,20 @@ func (f *GithubAssetFinder) Find() ([]string, error) {
 	}
 
 	// accumulate all assets from the json into a slice
-	assets := make([]string, 0, len(release.Assets))
+	assets := make([]Asset, 0, len(release.Assets))
 	for _, a := range release.Assets {
-		assets = append(assets, a.DownloadURL)
+		assets = append(assets, Asset{Name: a.Name, DownloadURL: a.URL})
 	}
 
 	return assets, nil
 }
 
-func (f *GithubAssetFinder) FindMatch() ([]string, error) {
+func (f *GithubAssetFinder) FindMatch() ([]Asset, error) {
 	tag := f.Tag[len("tags/"):]
 
 	for page := 1; ; page++ {
 		url := fmt.Sprintf("https://api.github.com/repos/%s/releases?page=%d", f.Repo, page)
-		resp, err := Get(url)
+		resp, err := Get(url, AcceptGitHubJSON)
 		if err != nil {
 			return nil, err
 		}
@@ -160,9 +167,9 @@ func (f *GithubAssetFinder) FindMatch() ([]string, error) {
 			}
 			if strings.Contains(r.Tag, tag) && !r.CreatedAt.Before(f.MinTime) {
 				// we have a winner
-				assets := make([]string, 0, len(r.Assets))
+				assets := make([]Asset, 0, len(r.Assets))
 				for _, a := range r.Assets {
-					assets = append(assets, a.DownloadURL)
+					assets = append(assets, Asset{Name: a.Name, DownloadURL: a.URL})
 				}
 				return assets, nil
 			}
@@ -179,7 +186,7 @@ func (f *GithubAssetFinder) FindMatch() ([]string, error) {
 // finds the latest pre-release and returns the tag
 func (f *GithubAssetFinder) getLatestTag() (string, error) {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/releases", f.Repo)
-	resp, err := Get(url)
+	resp, err := Get(url, AcceptGitHubJSON)
 	if err != nil {
 		return "", fmt.Errorf("pre-release finder: %w", err)
 	}
@@ -207,8 +214,12 @@ type DirectAssetFinder struct {
 	URL string
 }
 
-func (f *DirectAssetFinder) Find() ([]string, error) {
-	return []string{f.URL}, nil
+func (f *DirectAssetFinder) Find() ([]Asset, error) {
+	asset := Asset{
+		Name:        f.URL,
+		DownloadURL: f.URL,
+	}
+	return []Asset{asset}, nil
 }
 
 type GithubSourceFinder struct {
@@ -217,6 +228,11 @@ type GithubSourceFinder struct {
 	Tag  string
 }
 
-func (f *GithubSourceFinder) Find() ([]string, error) {
-	return []string{fmt.Sprintf("https://github.com/%s/tarball/%s/%s.tar.gz", f.Repo, f.Tag, f.Tool)}, nil
+func (f *GithubSourceFinder) Find() ([]Asset, error) {
+	name := fmt.Sprintf("%s.tar.gz", f.Tool)
+	asset := Asset{
+		Name:        name,
+		DownloadURL: fmt.Sprintf("https://github.com/%s/tarball/%s/%s", f.Repo, f.Tag, name),
+	}
+	return []Asset{asset}, nil
 }
