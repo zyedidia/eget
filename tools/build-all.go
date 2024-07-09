@@ -50,7 +50,7 @@ func main() {
 			fmt.Sprintf("GOOS=%s", platform),
 			fmt.Sprintf("GOARCH=%s", architecture),
 			fmt.Sprintf("GOMAXPROCS=%d", runtime.NumCPU()),
-			fmt.Sprintf("CGO_ENABLED=%d", cgo),
+			fmt.Sprintf("CGO_ENABLED=%s", cgo),
 		)
 
 		err := cmd.Run()
