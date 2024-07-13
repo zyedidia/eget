@@ -12,7 +12,7 @@ type Detector interface {
 	// Detect takes a list of possible assets and returns a direct match. If a
 	// single direct match is not found, it returns a list of candidates and an
 	// error explaining what happened.
-	Detect(assets []string) (string, []string, error)
+	Detect(assets []Asset) (Asset, []Asset, error)
 }
 
 type DetectorChain struct {
@@ -20,11 +20,11 @@ type DetectorChain struct {
 	system    Detector
 }
 
-func (dc *DetectorChain) Detect(assets []string) (string, []string, error) {
+func (dc *DetectorChain) Detect(assets []Asset) (Asset, []Asset, error) {
 	for _, d := range dc.detectors {
 		choice, candidates, err := d.Detect(assets)
 		if len(candidates) == 0 && err != nil {
-			return "", nil, err
+			return Asset{}, nil, err
 		} else if len(candidates) == 0 {
 			return choice, nil, nil
 		} else {
@@ -33,13 +33,13 @@ func (dc *DetectorChain) Detect(assets []string) (string, []string, error) {
 	}
 	choice, candidates, err := dc.system.Detect(assets)
 	if len(candidates) == 0 && err != nil {
-		return "", nil, err
+		return Asset{}, nil, err
 	} else if len(candidates) == 0 {
 		return choice, nil, nil
 	} else if len(candidates) >= 1 {
 		assets = candidates
 	}
-	return "", assets, fmt.Errorf("%d candidates found for asset chain", len(assets))
+	return Asset{}, assets, fmt.Errorf("%d candidates found for asset chain", len(assets))
 }
 
 // An OS represents a target operating system.
@@ -170,11 +170,11 @@ var goarchmap = map[string]Arch{
 // candidates.
 type AllDetector struct{}
 
-func (a *AllDetector) Detect(assets []string) (string, []string, error) {
+func (a *AllDetector) Detect(assets []Asset) (Asset, []Asset, error) {
 	if len(assets) == 1 {
 		return assets[0], nil, nil
 	}
-	return "", assets, fmt.Errorf("%d matches found", len(assets))
+	return Asset{}, assets, fmt.Errorf("%d matches found", len(assets))
 }
 
 // SingleAssetDetector finds a single named asset. If Anti is true it finds all
@@ -184,25 +184,25 @@ type SingleAssetDetector struct {
 	Anti  bool
 }
 
-func (s *SingleAssetDetector) Detect(assets []string) (string, []string, error) {
-	var candidates []string
+func (s *SingleAssetDetector) Detect(assets []Asset) (Asset, []Asset, error) {
+	var candidates []Asset
 	for _, a := range assets {
-		if !s.Anti && path.Base(a) == s.Asset {
+		if !s.Anti && path.Base(a.Name) == s.Asset {
 			return a, nil, nil
 		}
-		if !s.Anti && strings.Contains(path.Base(a), s.Asset) {
+		if !s.Anti && strings.Contains(path.Base(a.Name), s.Asset) {
 			candidates = append(candidates, a)
 		}
-		if s.Anti && !strings.Contains(path.Base(a), s.Asset) {
+		if s.Anti && !strings.Contains(path.Base(a.Name), s.Asset) {
 			candidates = append(candidates, a)
 		}
 	}
 	if len(candidates) == 1 {
 		return candidates[0], nil, nil
 	} else if len(candidates) > 1 {
-		return "", candidates, fmt.Errorf("%d candidates found for asset `%s`", len(candidates), s.Asset)
+		return Asset{}, candidates, fmt.Errorf("%d candidates found for asset `%s`", len(candidates), s.Asset)
 	}
-	return "", nil, fmt.Errorf("asset `%s` not found", s.Asset)
+	return Asset{}, nil, fmt.Errorf("asset `%s` not found", s.Asset)
 }
 
 // A SystemDetector matches a particular OS/Arch system pair.
@@ -234,22 +234,22 @@ func NewSystemDetector(sos, sarch string) (*SystemDetector, error) {
 // match the OS are found, and no full OS/Arch matches are found, the OS
 // matches are returned as candidates. Otherwise all assets are returned as
 // candidates.
-func (d *SystemDetector) Detect(assets []string) (string, []string, error) {
-	var priority []string
-	var matches []string
-	var candidates []string
-	all := make([]string, 0, len(assets))
+func (d *SystemDetector) Detect(assets []Asset) (Asset, []Asset, error) {
+	var priority []Asset
+	var matches []Asset
+	var candidates []Asset
+	all := make([]Asset, 0, len(assets))
 	for _, a := range assets {
-		if strings.HasSuffix(a, ".sha256") || strings.HasSuffix(a, ".sha256sum") {
+		if strings.HasSuffix(a.Name, ".sha256") || strings.HasSuffix(a.Name, ".sha256sum") {
 			// skip checksums (they will be checked later by the verifier)
 			continue
 		}
 
-		os, extra := d.Os.Match(a)
+		os, extra := d.Os.Match(a.Name)
 		if extra {
 			priority = append(priority, a)
 		}
-		arch := d.Arch.Match(a)
+		arch := d.Arch.Match(a.Name)
 		if os && arch {
 			matches = append(matches, a)
 		}
@@ -261,17 +261,17 @@ func (d *SystemDetector) Detect(assets []string) (string, []string, error) {
 	if len(priority) == 1 {
 		return priority[0], nil, nil
 	} else if len(priority) > 1 {
-		return "", priority, fmt.Errorf("%d priority matches found", len(matches))
+		return Asset{}, priority, fmt.Errorf("%d priority matches found", len(matches))
 	} else if len(matches) == 1 {
 		return matches[0], nil, nil
 	} else if len(matches) > 1 {
-		return "", matches, fmt.Errorf("%d matches found", len(matches))
+		return Asset{}, matches, fmt.Errorf("%d matches found", len(matches))
 	} else if len(candidates) == 1 {
 		return candidates[0], nil, nil
 	} else if len(candidates) > 1 {
-		return "", candidates, fmt.Errorf("%d candidates found (unsure architecture)", len(candidates))
+		return Asset{}, candidates, fmt.Errorf("%d candidates found (unsure architecture)", len(candidates))
 	} else if len(all) == 1 {
 		return all[0], nil, nil
 	}
-	return "", all, fmt.Errorf("no candidates found")
+	return Asset{}, all, fmt.Errorf("no candidates found")
 }
