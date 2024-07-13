@@ -60,17 +60,6 @@ func IsDirectory(path string) bool {
 	return fileInfo.IsDir()
 }
 
-// searches for an asset thaat has the same name as the requested one but
-// ending with .sha256 or .sha256sum
-func checksumAsset(asset string, assets []string) string {
-	for _, a := range assets {
-		if a == asset+".sha256sum" || a == asset+".sha256" {
-			return a
-		}
-	}
-	return ""
-}
-
 // Determine the appropriate Finder to use. If opts.URL is provided, we use
 // a DirectAssetFinder. Otherwise we use a GithubAssetFinder. When a Github
 // repo is provided, we assume the repo name is the 'tool' name (for direct
@@ -135,19 +124,41 @@ func getFinder(project string, opts *Flags) (finder Finder, tool string) {
 	return finder, tool
 }
 
-func getVerifier(sumAsset string, opts *Flags) (verifier Verifier, err error) {
+func getVerifier(asset string, assets []string, opts *Flags) (verifier Verifier, err error) {
 	if opts.Verify != "" {
 		verifier, err = NewSha256Verifier(opts.Verify)
-	} else if sumAsset != "" {
-		verifier = &Sha256AssetVerifier{
-			AssetURL: sumAsset,
+		if err != nil {
+			return nil, fmt.Errorf("create Sha256Verifier: %w", err)
 		}
-	} else if opts.Hash {
-		verifier = &Sha256Printer{}
-	} else {
-		verifier = &NoVerifier{}
+		return verifier, nil
 	}
-	return verifier, err
+
+	for _, a := range assets {
+		if a == asset+".sha256sum" || a == asset+".sha256" {
+			fmt.Printf("verify against %s\n", a)
+			return &Sha256AssetVerifier{
+				AssetURL: a,
+			}, nil
+		}
+		if strings.Contains(a, "checksum") {
+			binaryUrl, err := url.Parse(asset)
+			if err != nil {
+				return nil, fmt.Errorf("extract binary name from asset url: %s: %w", asset, err)
+			}
+			binaryName := path.Base(binaryUrl.Path)
+			fmt.Printf("verify against %s\n", a)
+			return &Sha256SumFileAssetVerifier{
+				Sha256SumAssetURL: a,
+				BinaryName:        binaryName,
+			}, nil
+		}
+	}
+
+	if opts.Hash {
+		return &Sha256Printer{}, nil
+	}
+
+	return &NoVerifier{}, nil
 }
 
 // Determine the appropriate detector. If the --system is 'all', we use an
@@ -479,19 +490,15 @@ func main() {
 
 	body := buf.Bytes()
 
-	sumAsset := checksumAsset(url, assets)
-	verifier, err := getVerifier(sumAsset, &opts)
+	verifier, err := getVerifier(url, assets, &opts)
 	if err != nil {
 		fatal(err)
 	}
 	err = verifier.Verify(body)
 	if err != nil {
 		fatal(err)
-	} else if opts.Verify == "" && sumAsset != "" {
-		fmt.Fprintf(output, "Checksum verified with %s\n", path.Base(sumAsset))
-	} else if opts.Verify != "" {
-		fmt.Fprintf(output, "Checksum verified\n")
 	}
+	fmt.Fprintf(output, "%s\n", verifier)
 
 	extractor, err := getExtractor(url, tool, &opts)
 	if err != nil {
