@@ -60,7 +60,7 @@ func IsDirectory(path string) bool {
 	return fileInfo.IsDir()
 }
 
-// searches for an asset thaat has the same name as the requested one but
+// searches for an asset that has the same name as the requested one but
 // ending with .sha256 or .sha256sum
 func checksumAsset(asset string, assets []string) string {
 	for _, a := range assets {
