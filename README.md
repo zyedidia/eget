@@ -78,6 +78,14 @@ brew install eget
 choco install eget
 ```
 
+### X-CMD
+
+If you're an [x-cmd](https://x-cmd.com/install/eget) user:
+
+```
+x install eget
+```
+
 ### Pre-built binaries
 
 Pre-built binaries are available on the [releases](https://github.com/zyedidia/eget/releases) page.
