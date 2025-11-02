@@ -365,6 +365,14 @@ func main() {
 		os.Exit(0)
 	}
 
+	if cli.ShowLog {
+		err := PrintLogs()
+		if err != nil {
+			fatal(err)
+		}
+		os.Exit(0)
+	}
+
 	target := ""
 
 	if len(args) > 0 {
@@ -398,12 +406,19 @@ func main() {
 
 	if opts.Remove {
 		ebin := os.Getenv("EGET_BIN")
-		err := os.Remove(filepath.Join(ebin, target))
+		removePath := filepath.Join(ebin, target)
+		err := os.Remove(removePath)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 		}
-		fmt.Printf("Removed `%s`\n", filepath.Join(ebin, target))
+		fmt.Printf("Removed `%s`\n", removePath)
+		
+		// Log the removal operation
+		if logErr := LogOperation(target, removePath, "removed"); logErr != nil {
+			fmt.Fprintf(os.Stderr, "Warning: failed to log removal: %v\n", logErr)
+		}
+		
 		os.Exit(0)
 	}
 
@@ -547,12 +562,25 @@ func main() {
 			}
 		}
 
+		// Check if file already exists (for update detection)
+		action := "installed"
+		if _, err := os.Stat(out); err == nil {
+			action = "updated"
+		}
+
 		err = bin.Extract(out)
 		if err != nil {
 			fatal(err)
 		}
 
 		fmt.Fprintf(output, "Extracted `%s` to `%s`\n", bin.ArchiveName, out)
+		
+		// Log the operation (skip logging to stdout)
+		if out != "-" {
+			if logErr := LogOperation(target, out, action); logErr != nil {
+				fmt.Fprintf(os.Stderr, "Warning: failed to log operation: %v\n", logErr)
+			}
+		}
 	}
 
 	if opts.All {
