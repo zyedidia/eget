@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/BurntSushi/toml"
 	"github.com/jessevdk/go-flags"
@@ -221,6 +222,26 @@ func update[T any](config T, cli *T) T {
 	return *cli
 }
 
+// substituteTemplateVars replaces {{.OS}} and {{.Arch}} in asset filter strings
+// with the actual OS and architecture values based on the system parameter.
+func substituteTemplateVars(filter string, system string) string {
+	goos := runtime.GOOS
+	goarch := runtime.GOARCH
+
+	// If system is specified, parse it to extract OS and Arch
+	if system != "" && system != "all" {
+		parts := strings.Split(system, "/")
+		if len(parts) >= 2 {
+			goos = parts[0]
+			goarch = parts[1]
+		}
+	}
+
+	result := strings.ReplaceAll(filter, "{{.OS}}", goos)
+	result = strings.ReplaceAll(result, "{{.Arch}}", goarch)
+	return result
+}
+
 // Move the loaded configuration file global options into the opts variable
 func SetGlobalOptionsFromConfig(config *Config, parser *flags.Parser, opts *Flags, cli CliFlags) error {
 	if config.Global.GithubToken != "" && os.Getenv("EGET_GITHUB_TOKEN") == "" {
@@ -255,7 +276,6 @@ func SetProjectOptionsFromConfig(config *Config, parser *flags.Parser, opts *Fla
 	for name, repo := range config.Repositories {
 		if name == projectName {
 			opts.All = update(repo.All, cli.All)
-			opts.Asset = update(repo.AssetFilters, cli.Asset)
 			opts.DLOnly = update(repo.DownloadOnly, cli.DLOnly)
 			opts.ExtractFile = update(repo.File, cli.ExtractFile)
 			opts.Hash = update(repo.ShowHash, cli.Hash)
@@ -271,6 +291,26 @@ func SetProjectOptionsFromConfig(config *Config, parser *flags.Parser, opts *Fla
 			opts.UpgradeOnly = update(repo.UpgradeOnly, cli.UpgradeOnly)
 			opts.Verify = update(repo.Verify, cli.Verify)
 			opts.DisableSSL = update(repo.DisableSSL, cli.DisableSSL)
+
+			// Apply template substitution to asset_filters
+			// We need to determine the system value to use for substitution
+			systemForTemplate := opts.System
+			if systemForTemplate == "" {
+				systemForTemplate = fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH)
+			}
+
+			assetFilters := repo.AssetFilters
+			if cli.Asset == nil && len(assetFilters) > 0 {
+				// Only apply template substitution if we're using config asset_filters
+				substitutedFilters := make([]string, len(assetFilters))
+				for i, filter := range assetFilters {
+					substitutedFilters[i] = substituteTemplateVars(filter, systemForTemplate)
+				}
+				opts.Asset = substitutedFilters
+			} else {
+				opts.Asset = update(assetFilters, cli.Asset)
+			}
+
 			break
 		}
 	}

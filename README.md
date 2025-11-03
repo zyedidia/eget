@@ -182,6 +182,27 @@ target = "~/bin"
 target = "~/.local/bin"
 ```
 
+## Template Variables in Asset Filters
+
+The `asset_filters` setting supports template variables that are automatically replaced with the appropriate values based on your target system:
+
+- `{{.OS}}` - Replaced with the target operating system (e.g., `linux`, `darwin`, `windows`)
+- `{{.Arch}}` - Replaced with the target architecture (e.g., `amd64`, `arm64`, `386`)
+
+The values are determined by:
+1. The `--system` flag if provided (e.g., `--system linux/amd64`)
+2. The `system` setting in the repository configuration
+3. The runtime system (detected automatically from your current OS/architecture)
+
+Example:
+```toml
+["junegunn/fzf"]
+asset_filters = ["{{.OS}}_{{.Arch}}.tar.gz"]
+```
+
+When running `eget junegunn/fzf` on a Linux AMD64 system, this will match assets containing `linux_amd64.tar.gz`.
+When running `eget junegunn/fzf --system darwin/arm64`, it will match assets containing `darwin_arm64.tar.gz`.
+
 ## Available settings - global section
 
 | Setting | Related Flag | Description | Default |
@@ -202,7 +223,7 @@ target = "~/.local/bin"
 | Setting | Related Flag | Description | Default |
 | --- | --- | --- | --- |
 | `all` | `--all` | Whether to extract all candidate files. | `false` |
-| `asset_filters` | `--asset` |  An array of partial asset names to filter the available assets for download. | `[]` |
+| `asset_filters` | `--asset` |  An array of partial asset names to filter the available assets for download. Supports template variables `{{.OS}}` and `{{.Arch}}` which will be replaced with the target OS and architecture. | `[]` |
 | `download_only` | `--download-only` | Whether to stop after downloading the asset (no extraction). | `false` |
 | `download_source` | `--source` | Whether to download the source code for the target repo instead of a release. | `false` |
 | `file` | `--file` | The glob to select files for extraction. | `*` |
@@ -229,6 +250,10 @@ target = "~/.local/bin"
     show_hash = true
     asset_filters = [ "static", ".tar.gz" ]
     target = "~/.local/bin/micro"
+
+["junegunn/fzf"]
+    asset_filters = ["{{.OS}}_{{.Arch}}.tar.gz"]
+    target = "~/bin"
 ```
 
 By using the configuration above, you could run the following command to download the latest release of `micro`:
