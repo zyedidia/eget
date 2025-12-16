@@ -365,6 +365,24 @@ func main() {
 		os.Exit(0)
 	}
 
+	if cli.ListInstalled {
+		err := listInstalled()
+		if err != nil {
+			fatal(err)
+		}
+		os.Exit(0)
+	}
+
+	if cli.UpgradeAll {
+		results, err := upgradeAllPackages(cli.DryRun, cli.Interactive)
+		if err != nil {
+			fatal(err)
+		}
+
+		displayUpgradeResults(results, cli.DryRun)
+		os.Exit(0)
+	}
+
 	target := ""
 
 	if len(args) > 0 {
@@ -401,9 +419,17 @@ func main() {
 		err := os.Remove(filepath.Join(ebin, target))
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
+			// Continue to remove from tracking even if file removal failed
+		} else {
+			fmt.Printf("Removed `%s`\n", filepath.Join(ebin, target))
 		}
-		fmt.Printf("Removed `%s`\n", filepath.Join(ebin, target))
+
+		// Also remove from installed tracking
+		err = removeInstalled(target)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Warning: failed to remove from installed tracking: %v\n", err)
+		}
+
 		os.Exit(0)
 	}
 
@@ -521,7 +547,9 @@ func main() {
 		bins = []ExtractedFile{bin}
 	}
 
-	extract := func(bin ExtractedFile) {
+	extractedFiles := make([]string, 0, len(bins))
+
+	extract := func(bin ExtractedFile) string {
 		mode := bin.Mode()
 
 		// write the extracted file to a file on disk, in the --to directory if
@@ -553,13 +581,29 @@ func main() {
 		}
 
 		fmt.Fprintf(output, "Extracted `%s` to `%s`\n", bin.ArchiveName, out)
+		return out
 	}
 
 	if opts.All {
 		for _, bin := range bins {
-			extract(bin)
+			outPath := extract(bin)
+			if outPath != "-" { // Don't track stdout output
+				extractedFiles = append(extractedFiles, outPath)
+			}
 		}
 	} else {
-		extract(bin)
+		outPath := extract(bin)
+		if outPath != "-" { // Don't track stdout output
+			extractedFiles = append(extractedFiles, outPath)
+		}
+	}
+
+	// Record successful installation
+	if !opts.DLOnly && len(extractedFiles) > 0 {
+		err = recordInstallation(target, url, tool, opts, extractedFiles)
+		if err != nil {
+			// Log warning but don't fail the installation
+			fmt.Fprintf(os.Stderr, "Warning: failed to record installation: %v\n", err)
+		}
 	}
 }
